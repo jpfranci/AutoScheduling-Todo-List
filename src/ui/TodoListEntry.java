@@ -1,17 +1,31 @@
 package ui;
 
 public class TodoListEntry {
+    private static final int HIGH = 3;
+    private static final int MEDIUM = 2;
+    private static final int LOW = 1;
+
     private String activity;
     private int priority;
     private double time;
 
-    // constructs a TodoListEntry object
-    public TodoListEntry(String activity, int priority, double time) {
-        this.activity = activity;
-        this.priority = priority;
-        this.time = time;
-    }
 
+
+    // constructs a TodoListEntry object
+    public TodoListEntry(String activity, String priority, double time) {
+        this.activity = activity;
+        this.time = time;
+
+        if (priority.equalsIgnoreCase("high")) {
+            this.priority = HIGH;
+        }
+        else if (priority.equalsIgnoreCase("medium")) {
+            this.priority = MEDIUM;
+        }
+        else {
+            this.priority = LOW;
+        }
+    }
 
     // getters
     public String getActivity() {
@@ -23,11 +37,11 @@ public class TodoListEntry {
     }
 
     public String getPriorityLevel() {
-        if (priority >= 4) {
+        if (priority == HIGH) {
             return "High";
         }
 
-        else if (priority >= 2) {
+        else if (priority == MEDIUM) {
             return "Medium";
         }
 
