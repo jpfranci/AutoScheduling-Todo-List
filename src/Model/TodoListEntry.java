@@ -1,4 +1,4 @@
-package ui;
+package Model;
 
 public class TodoListEntry {
     private static final int HIGH = 3;
