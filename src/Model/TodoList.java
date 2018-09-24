@@ -1,36 +1,58 @@
 package Model;
 
+import ui.UserInput;
+
+
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class TodoList {
-    private static final int QUIT = 0;
-    private static final int ADD_ENTRY = 1;
-    private static final int REMOVE_ENTRY = 2;
-    private static final int PRINT_OUT_LIST = 3;
+    public static final int QUIT = 0;
+    public static final int ADD_ENTRY = 1;
+    public static final int REMOVE_ENTRY = 2;
+    public static final int PRINT_OUT_LIST = 3;
 
-    ArrayList<TodoListEntry> todo = new ArrayList<>();
-    Scanner scanner = new Scanner(System.in);
+    private ArrayList<TodoListEntry> todoArray = new ArrayList<>();
+    private UserInput userInput = new UserInput();
 
-    public TodoList() {
-        promptUserForAction();
+    // constructor used for testing
+    public TodoList(int choice) {
     }
 
-    private void promptUserForAction() {
+    public TodoList() {
+        todoListAction();
+    }
+
+    // MODIFIES: this
+    // EFFECTS: Prompts user to choose action for TodoList: add entry, remove entry, print out list,
+    // or quit program if list is empty, automatically prompts to add an entry
+    public void todoListAction() {
+        String userEntry;
         int choice;
-        if (todo.size() == 0) {
-            promptUserForTodoListEntry();
+
+        if (todoArray.size() == 0) {
+            do {
+                userEntry = userInput.getUserEntryToAdd();
+            }
+            while(!addTodoListEntry(userEntry));
         }
 
         do {
-            choice = promptUserForChoice();
+            choice = userInput.promptUserForChoice();
 
             switch (choice) {
                 case ADD_ENTRY:
-                    promptUserForTodoListEntry();
+                    do {
+                        userEntry = userInput.getUserEntryToAdd();
+                    }
+                    while(!addTodoListEntry(userEntry));
+                    sortTodoListByDescendingPriorityAndTime();
                     break;
                 case REMOVE_ENTRY:
-                    promptUserToRemoveEntry();
+                    printEveryEntry();
+                    int entryToRemove = userInput.getUserEntryToRemove();
+                    removeTodoListEntry(entryToRemove);
                     break;
                 case PRINT_OUT_LIST:
                     printTodoList();
@@ -40,102 +62,100 @@ public class TodoList {
         } while(choice != QUIT);
     }
 
-    private int promptUserForChoice() {
-        int choice;
-
-        System.out.println("\nPlease enter the number that you would like to do next\n[" +ADD_ENTRY+ "] add entry \n[" +
-                REMOVE_ENTRY+ "] remove an entry \n[" +PRINT_OUT_LIST+ "] print " + "out your list " +
-                "\n[" +QUIT+ "] quit");
-        do {
-            choice = getInt();
-        } while(choice < 0 || choice > 3); // checks for valid input
-
-        return choice;
-    }
-
-
-    private void promptUserForTodoListEntry() {
-        int choice;
-
-        do {
-            System.out.println("\nPlease enter a todo-list entry as follows:\nActivity, priority " +
-                    "(low, medium, or high), time needed (in hrs)");
-            System.out.println("An example would be: Play Basketball, medium, 4");
-
-            getUserEntry();
-
-            System.out.println("Press:\n[any number]: to continue adding\n" +
-                    "[0]: to stop adding entries, \n");
-            choice = getInt();
-
-        } while(choice != 0);
-    }
-
-    private int getInt() {
-        int choice = scanner.nextInt();
-        scanner.nextLine();
-        return choice;
-    }
-
     // MODIFIES: this
-    // EFFECTS: Prompts user to add Entries to Todo-List and checks if valid input
-    // If valid input, then adds to todo-list and prints out a success message
-    private void getUserEntry() {
-        String userEntry;
+    // EFFECTS: Returns true if String matches format required and adds TodoListEntry represented by
+    // String into todolist
+    public boolean addTodoListEntry(String userEntry) {
+       if (inputFollowsFormat(userEntry)) {
+           parseString(userEntry);
+           return true;
+       }
 
-        do{
-            userEntry = scanner.nextLine();
-        } while(!userEntry.matches("(\\w *){1,}, (?i)(high|medium|low){1}, \\d{1,}"));
+       else {
+           System.out.println("Invalid input: please try again!");
+           return false;
+       }
+    }
 
+    // REQUIRES: Valid string that follows format of: Activity, Priority(low, medium, high), time(number in hrs)
+    // MODIFIES: this
+    // EFFECTS: Splits string into Activity, priority, and time and generates a todoListEntry
+    // returns array of strings that represents the split strings
+    public String[] parseString(String userEntry) {
         String userEntries[] = userEntry.split(", ");
 
         int time = Integer.parseInt(userEntries[2]);
 
         TodoListEntry todoListEntry = new TodoListEntry(userEntries[0], userEntries[1], time);
-        todo.add(todoListEntry);
+
+        todoArray.add(todoListEntry);
         System.out.println("Successfully added:\n" + userEntries[0] + ", priority level "
-                + userEntries[1]  + ", which will take " + time + " hrs to complete!\n");
+                + userEntries[1] + ", which will take " + time + " hrs to complete!\n");
+
+        return userEntries;
     }
 
-    private void promptUserToRemoveEntry() {
-        printTodoList();
-        System.out.println("\nPlease enter the activity name you would like to remove from the list\n");
+    private boolean inputFollowsFormat(String userEntry) {
+       return userEntry.matches("(\\w *)+, (?i)(high|medium|low), 0*[1-9][0-9]*");
+    }
 
-        String entryToRemove = scanner.nextLine();
-
-        int index = 0;
-
-        for (TodoListEntry entry : todo) {
-            if (entry.getActivity().equalsIgnoreCase(entryToRemove)) {
-                todo.remove(index);
-                System.out.println("\nSuccessfully removed " +entryToRemove+ " from todo-list!");
-                return;
+    // MODIFIES: this
+    // EFFECTS: Sorts TodoList by descending priority first and if equal priority then by
+    // time needed to complete task
+    public void sortTodoListByDescendingPriorityAndTime() {
+        Collections.sort(todoArray, new Comparator<TodoListEntry>() {
+            public int compare(TodoListEntry e1, TodoListEntry e2) {
+                int comparePriority = Integer.compare(e1.getPriority(), e2.getPriority());
+                if (comparePriority != 0) {
+                    return comparePriority;
+                }
+                else {
+                    return Double.compare(e2.getTime(), e1.getTime());
+                }
             }
-            index++;
-        }
-        System.out.println("\nError: " +entryToRemove+ " was not in the todo-list");
+        });
     }
 
-    // prints out contents of TodoList
-    public void printTodoList() {
-        System.out.println("\nYou have to:");
-
-        if (todo.size() == 0) {
-            System.out.println("Your todo-list is empty");
+    // MODIFIES: this
+    // EFFECTS: Returns true if successfully removed entry at index, returns false otherwise
+    public boolean removeTodoListEntry(int indexToRemove) {
+        if (indexToRemove < todoArray.size() && indexToRemove >= 0) {
+            todoArray.remove(indexToRemove);
+            System.out.println("Successfully removed entry!");
+            return true;
         }
 
         else {
-
-            for (TodoListEntry entry : todo) {
-                String activity = entry.getActivity();
-                String priorityLevel = entry.getPriorityLevel();
-                double time = entry.getTime();
-
-                System.out.println(activity + " which is " + priorityLevel + " priority and will take "
-                        + time + " hours");
-            }
+            System.out.println("Error: Invalid user entry number!");
+            return false;
         }
     }
 
+    // EFFECTS: Prints out List and its contents into screen with array index
+    private void printTodoList() {
+        if (todoArray.size() == 0) {
+            System.out.println("Your todoArray-list is empty");
+        }
+
+        else {
+            System.out.println("\nYou have to:");
+            printEveryEntry();
+        }
+    }
+
+    // EFFECTS: Prints out list and all its contents with index number
+    private void printEveryEntry() {
+        int index = 0;
+
+        for (TodoListEntry entry : todoArray) {
+            System.out.println("["+index+"] " +entry.getActivity() + " which is " + entry.getPriorityLevel() +
+                    " priority and will take " + entry.getTime() + " hours");
+            index++;
+        }
+    }
+
+    public ArrayList<TodoListEntry> getTodoArray() {
+        return todoArray;
+    }
 
 }
