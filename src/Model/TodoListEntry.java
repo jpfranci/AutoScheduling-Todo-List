@@ -1,9 +1,12 @@
 package Model;
 
+import java.time.LocalDate;
+
 public class TodoListEntry {
     private static final int HIGH = 1;
     private static final int MEDIUM = 2;
     private static final int LOW = 3;
+    public static final int DEFAULT_DUE_DATE = 7;
 
     public static final String HIGH_STRING = "High";
     public static final String MEDIUM_STRING = "Medium";
@@ -12,16 +15,24 @@ public class TodoListEntry {
     private String activity;
     private int priority;
     private double time;
+    private LocalDate dueDate;
 
 
     // REQUIRES: priority to be one of low, medium, high
     // MODIFIES: this
     // EFFECTS: Constructs a TodoListEntry using activity, priority, and time information
     // called to constructor
-    public TodoListEntry(String activity, String priority, double time) {
+    // if date is null then sets dueDate as week after today otherwise sets as date
+    public TodoListEntry(String activity, String priority, double time, String date) {
         this.activity = activity;
         this.time = time;
         this.priority = priorityStringToInt(priority);
+        if (date != null) {
+            dueDate = LocalDate.parse(date);
+        }
+        else {
+            dueDate = LocalDate.now().plusDays(DEFAULT_DUE_DATE);
+        }
     }
 
     private int priorityStringToInt(String priority) {
@@ -39,7 +50,7 @@ public class TodoListEntry {
     // EFFECTS: Returns contents of TodoListEntry in form of Activity,
     // priorityLevel(low, medium, high), time(in hrs)
     public String getTodoInfo() {
-        return activity+ ", " +this.getPriorityLevel()+ ", " +time;
+        return activity+ ", " +this.getPriorityLevel()+ ", " +time+ ", " +dueDate;
     }
 
 
@@ -56,6 +67,10 @@ public class TodoListEntry {
     // EFFECTS: Return integer representation of priority
     public int getPriority() {
         return priority;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 
     // REQUIRES: priority level from LOW-HIGH
@@ -78,9 +93,9 @@ public class TodoListEntry {
         if (obj instanceof TodoListEntry) {
             TodoListEntry entry = (TodoListEntry) obj;
             return activity.equals(entry.getActivity())
-                    && priority == entry.getPriority() && time == entry.getTime();
+                    && priority == entry.getPriority()
+                    && time == entry.getTime() && dueDate.equals(entry.getDueDate());
         }
         return false;
     }
-
 }

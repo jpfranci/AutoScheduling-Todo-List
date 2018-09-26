@@ -25,8 +25,16 @@ public class UserInput {
     // EFFECTS: Prompts user for entry to add to list and returns the string that the user entered
     public String getUserEntryToAdd() {
         System.out.println("\nPlease enter a todo-list entry as follows:\nActivity, priority " +
-                "(low, medium, or high), time needed (in hrs)");
+                "(low, medium, or high), time needed (in hrs), due date");
         System.out.println("An example would be: Play Basketball, medium, 4");
+
+        return scanString();
+    }
+
+    public String getUserEntryForDate() {
+        System.out.println("\nPlease enter the due date for the activity as follows: \n" +
+                "YYYY-MM-DD (due dates are set a week from today's date by default)\n" +
+                "(entering nothing or entering an invalid format will result in default due date)");
 
         return scanString();
     }

@@ -2,7 +2,6 @@ package Model;
 
 import ui.UserInput;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,13 +28,15 @@ public class TodoList {
     // or quit program if list is empty, automatically prompts to add an entry
     public void todoListAction() {
         String userEntry;
+        String date;
         int choice;
 
         if (todoArray.size() == 0) {
             do {
                 userEntry = userInput.getUserEntryToAdd();
+                date = userInput.getUserEntryForDate();
             }
-            while(!addTodoListEntry(userEntry));
+            while(!addTodoListEntry(userEntry, date));
         }
 
         do {
@@ -45,15 +46,21 @@ public class TodoList {
                 case ADD_ENTRY:
                     do {
                         userEntry = userInput.getUserEntryToAdd();
+                        date = userInput.getUserEntryForDate();
                     }
-                    while(!addTodoListEntry(userEntry));
+                    while(!addTodoListEntry(userEntry, date));
                     sortTodoListByDescendingPriorityAndTime();
                     break;
                 case REMOVE_ENTRY:
                     printEveryEntry();
-                    int entryToRemove = userInput.getUserEntryToRemove();
-                    removeTodoListEntry(entryToRemove);
-                    break;
+                    if (todoArray.size() == 0) {
+                        break;
+                    }
+                    else {
+                        int entryToRemove = userInput.getUserEntryToRemove();
+                        removeTodoListEntry(entryToRemove);
+                        break;
+                    }
                 case PRINT_OUT_LIST:
                     printTodoList();
                     break;
@@ -65,9 +72,9 @@ public class TodoList {
     // MODIFIES: this
     // EFFECTS: Returns true if String matches format required and adds TodoListEntry represented by
     // String into todolist
-    public boolean addTodoListEntry(String userEntry) {
+    public boolean addTodoListEntry(String userEntry, String date) {
        if (inputFollowsFormat(userEntry)) {
-           parseString(userEntry);
+           parseString(userEntry, date);
            return true;
        }
 
@@ -80,23 +87,37 @@ public class TodoList {
     // REQUIRES: Valid string that follows format of: Activity, Priority(low, medium, high), time(number in hrs)
     // MODIFIES: this
     // EFFECTS: Splits string into Activity, priority, and time and generates a todoListEntry
+    // checks if date is valid and if it is not then sets todoListEntry due date as week from today's date
+    // and if valid then sets due date as that date
     // returns array of strings that represents the split strings
-    public String[] parseString(String userEntry) {
+    private String[] parseString(String userEntry, String date) {
+        TodoListEntry todoListEntry;
         String userEntries[] = userEntry.split(", ");
 
         int time = Integer.parseInt(userEntries[2]);
+        if (dateFollowsFormat(date)) {
+            todoListEntry = new TodoListEntry(userEntries[0], userEntries[1], time, date);
+            todoArray.add(todoListEntry);
+        }
 
-        TodoListEntry todoListEntry = new TodoListEntry(userEntries[0], userEntries[1], time);
+        else {
+            todoListEntry = new TodoListEntry(userEntries[0], userEntries[1], time, null);
+            todoArray.add(todoListEntry);
+        }
 
-        todoArray.add(todoListEntry);
-        System.out.println("Successfully added:\n" + userEntries[0] + ", priority level "
-                + userEntries[1] + ", which will take " + time + " hrs to complete!\n");
+            System.out.println("Successfully added:\n" + todoListEntry.getActivity() + ", priority level "
+                    + todoListEntry.getPriorityLevel() + ", which will take " + todoListEntry.getTime()
+                    + " hrs to complete and is due on " + "" +todoListEntry.getDueDate()+ "!\n");
 
         return userEntries;
     }
 
     private boolean inputFollowsFormat(String userEntry) {
        return userEntry.matches("(\\w *)+, (?i)(high|medium|low), 0*[1-9][0-9]*");
+    }
+
+    private boolean dateFollowsFormat(String date) {
+        return date.matches("[2-9]\\d{3}-(0\\d|1[0-2])-\\d{2}");
     }
 
     // MODIFIES: this
@@ -110,7 +131,13 @@ public class TodoList {
                     return comparePriority;
                 }
                 else {
-                    return Double.compare(e2.getTime(), e1.getTime());
+                    int compareDate = e1.getDueDate().compareTo(e2.getDueDate());
+                    if (compareDate != 0) {
+                        return compareDate;
+                    }
+                    else {
+                        return Double.compare(e2.getTime(), e1.getTime());
+                    }
                 }
             }
         });
@@ -147,12 +174,19 @@ public class TodoList {
     private void printEveryEntry() {
         int index = 0;
 
-        for (TodoListEntry entry : todoArray) {
-            System.out.println("["+index+"] " +entry.getActivity() + " which is " + entry.getPriorityLevel() +
-                    " priority and will take " + entry.getTime() + " hours");
-            index++;
+        if (todoArray.size() == 0) {
+            System.out.println("Your todoArray-list is empty");
+        }
+
+        else {
+            for (TodoListEntry entry : todoArray) {
+                System.out.println("[" + index + "] " + entry.getActivity() + " which is " + entry.getPriorityLevel() +
+                        " priority and will take " + entry.getTime() + " hours and is due on " + entry.getDueDate());
+                index++;
+            }
         }
     }
+
 
     public ArrayList<TodoListEntry> getTodoArray() {
         return todoArray;
