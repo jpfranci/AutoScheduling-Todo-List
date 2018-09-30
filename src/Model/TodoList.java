@@ -26,7 +26,7 @@ public class TodoList {
     // MODIFIES: this
     // EFFECTS: Prompts user to choose action for TodoList: add entry, remove entry, print out list,
     // or quit program if list is empty, automatically prompts to add an entry
-    public void todoListAction() {
+    private void todoListAction() {
         String userEntry;
         String date;
         int choice;
@@ -49,7 +49,7 @@ public class TodoList {
                         date = userInput.getUserEntryForDate();
                     }
                     while(!addTodoListEntry(userEntry, date));
-                    sortTodoListByDescendingPriorityAndTime();
+                    sortTodoListByPriorityThenDateThenTime();
                     break;
                 case REMOVE_ENTRY:
                     printEveryEntry();
@@ -71,7 +71,7 @@ public class TodoList {
 
     // MODIFIES: this
     // EFFECTS: Returns true if String matches format required and adds TodoListEntry represented by
-    // String into todolist
+    // String into TodoList
     public boolean addTodoListEntry(String userEntry, String date) {
        if (inputFollowsFormat(userEntry)) {
            parseString(userEntry, date);
@@ -79,7 +79,7 @@ public class TodoList {
        }
 
        else {
-           System.out.println("Invalid input: please try again!");
+           System.out.println("Invalid input for activity, priority, time: please try again!");
            return false;
        }
     }
@@ -87,10 +87,9 @@ public class TodoList {
     // REQUIRES: Valid string that follows format of: Activity, Priority(low, medium, high), time(number in hrs)
     // MODIFIES: this
     // EFFECTS: Splits string into Activity, priority, and time and generates a todoListEntry
-    // checks if date is valid and if it is not then sets todoListEntry due date as week from today's date
+    // checks if date is valid and if it is not then sets todoListEntry due date as one week from today's date
     // and if valid then sets due date as that date
-    // returns array of strings that represents the split strings
-    private String[] parseString(String userEntry, String date) {
+    private void parseString(String userEntry, String date) {
         TodoListEntry todoListEntry;
         String userEntries[] = userEntry.split(", ");
 
@@ -105,42 +104,27 @@ public class TodoList {
             todoArray.add(todoListEntry);
         }
 
-            System.out.println("Successfully added:\n" + todoListEntry.getActivity() + ", priority level "
-                    + todoListEntry.getPriorityLevel() + ", which will take " + todoListEntry.getTime()
-                    + " hrs to complete and is due on " + "" +todoListEntry.getDueDate()+ "!\n");
+            System.out.println("Successfully added:\n" + todoListEntry.getActivity() +
+                    ", priority level " + todoListEntry.getPriorityLevel() +
+                    ", which will take " + todoListEntry.getTime() + " hrs to complete " +
+                    "and is due on " + "" +todoListEntry.getDueDate()+ "!\n");
+        }
 
-        return userEntries;
-    }
-
+    // EFFECTS: Checks if input follows the format of Activity, priority(high, medium, low), time
     private boolean inputFollowsFormat(String userEntry) {
        return userEntry.matches("(\\w *)+, (?i)(high|medium|low), 0*[1-9][0-9]*");
     }
 
+    // EFFECTS: Checks if date is valid and is in the 2000s
     private boolean dateFollowsFormat(String date) {
-        return date.matches("[2-9]\\d{3}-(0\\d|1[0-2])-\\d{2}");
+        return date.matches("[2-9]\\d{3}-(0\\d|1[0-2])-(3[0-1]|[0-2]\\d)");
     }
 
     // MODIFIES: this
-    // EFFECTS: Sorts TodoList by descending priority first and if equal priority then by
-    // time needed to complete task
-    public void sortTodoListByDescendingPriorityAndTime() {
-        Collections.sort(todoArray, new Comparator<TodoListEntry>() {
-            public int compare(TodoListEntry e1, TodoListEntry e2) {
-                int comparePriority = Integer.compare(e1.getPriority(), e2.getPriority());
-                if (comparePriority != 0) {
-                    return comparePriority;
-                }
-                else {
-                    int compareDate = e1.getDueDate().compareTo(e2.getDueDate());
-                    if (compareDate != 0) {
-                        return compareDate;
-                    }
-                    else {
-                        return Double.compare(e2.getTime(), e1.getTime());
-                    }
-                }
-            }
-        });
+    // EFFECTS: Sorts TodoList by descending priority first and if equal priority then by due date
+    // and if equal due date then by time needed to complete task
+    public void sortTodoListByPriorityThenDateThenTime() {
+        Collections.sort(todoArray);
     }
 
     // MODIFIES: this
@@ -180,13 +164,13 @@ public class TodoList {
 
         else {
             for (TodoListEntry entry : todoArray) {
-                System.out.println("[" + index + "] " + entry.getActivity() + " which is " + entry.getPriorityLevel() +
-                        " priority and will take " + entry.getTime() + " hours and is due on " + entry.getDueDate());
+                System.out.println("[" + index + "] " + entry.getActivity() + " which is "
+                        + entry.getPriorityLevel() + " priority and will take "
+                        + entry.getTime() + " hours and is due on " + entry.getDueDate());
                 index++;
             }
         }
     }
-
 
     public ArrayList<TodoListEntry> getTodoArray() {
         return todoArray;

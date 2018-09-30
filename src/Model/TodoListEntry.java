@@ -2,7 +2,7 @@ package Model;
 
 import java.time.LocalDate;
 
-public class TodoListEntry {
+public class TodoListEntry implements Comparable<TodoListEntry> {
     private static final int HIGH = 1;
     private static final int MEDIUM = 2;
     private static final int LOW = 3;
@@ -18,7 +18,7 @@ public class TodoListEntry {
     private LocalDate dueDate;
 
 
-    // REQUIRES: priority to be one of low, medium, high
+    // REQUIRES: priority to be one of low, medium, high & dueDate to not be Feb. 29
     // MODIFIES: this
     // EFFECTS: Constructs a TodoListEntry using activity, priority, and time information
     // called to constructor
@@ -94,8 +94,32 @@ public class TodoListEntry {
             TodoListEntry entry = (TodoListEntry) obj;
             return activity.equals(entry.getActivity())
                     && priority == entry.getPriority()
-                    && time == entry.getTime() && dueDate.equals(entry.getDueDate());
+                    && time == entry.getTime()
+                    && dueDate.equals(entry.getDueDate());
         }
         return false;
+    }
+
+    @Override
+    // EFFECTS: Follows TodoListEntry order to compare (order goes descending priority for
+    // priority (high, medium, low), ascending order for dates, and descending order for time)
+    // returns 1 if o is ahead in TodoListEntry order than this, 0 if equal, and -1 if behind in order
+    public int compareTo(TodoListEntry o) {
+        int comparePriority = Integer.compare(priority, o.getPriority());
+
+        if (comparePriority != 0) {
+            return comparePriority;
+        }
+
+        else {
+            int compareDate = dueDate.compareTo(o.getDueDate());
+            if (compareDate != 0) {
+                return compareDate;
+            }
+
+            else {
+                return Double.compare(o.getTime(), time);
+            }
+        }
     }
 }
