@@ -1,8 +1,9 @@
 package Model;
 
 import java.time.LocalDate;
+import java.io.*;
 
-public class TodoListEntry implements Comparable<TodoListEntry> {
+public class TodoListEntry implements Comparable<TodoListEntry>, Serializable {
     private static final int HIGH = 1;
     private static final int MEDIUM = 2;
     private static final int LOW = 3;
@@ -122,4 +123,5 @@ public class TodoListEntry implements Comparable<TodoListEntry> {
             }
         }
     }
+
 }

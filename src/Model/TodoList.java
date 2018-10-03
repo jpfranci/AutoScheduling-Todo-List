@@ -2,15 +2,16 @@ package Model;
 
 import ui.UserInput;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
-public class TodoList {
+public class TodoList implements Loadable, Saveable {
     public static final int QUIT = 0;
     public static final int ADD_ENTRY = 1;
     public static final int REMOVE_ENTRY = 2;
     public static final int PRINT_OUT_LIST = 3;
+    public static final String IO_FILE = "todolist.ser";
 
     private ArrayList<TodoListEntry> todoArray = new ArrayList<>();
     private UserInput userInput = new UserInput();
@@ -19,54 +20,76 @@ public class TodoList {
     public TodoList(int choice) {
     }
 
-    public TodoList() {
-        todoListAction();
-    }
-
     // MODIFIES: this
     // EFFECTS: Prompts user to choose action for TodoList: add entry, remove entry, print out list,
-    // or quit program if list is empty, automatically prompts to add an entry
-    private void todoListAction() {
-        String userEntry;
-        String date;
-        int choice;
+    // or quit program and saves it
+    // if list is empty, automatically prompts to add an entry
+    public TodoList() {
+        tryToLoad();
 
         if (todoArray.size() == 0) {
-            do {
-                userEntry = userInput.getUserEntryToAdd();
-                date = userInput.getUserEntryForDate();
-            }
-            while(!addTodoListEntry(userEntry, date));
+            addEntry();
         }
 
+        handleCommand();
+        tryToSave();
+    }
+
+    private void handleCommand() {
+        int choice;
         do {
             choice = userInput.promptUserForChoice();
 
             switch (choice) {
                 case ADD_ENTRY:
-                    do {
-                        userEntry = userInput.getUserEntryToAdd();
-                        date = userInput.getUserEntryForDate();
-                    }
-                    while(!addTodoListEntry(userEntry, date));
+                    addEntry();
                     sortTodoListByPriorityThenDateThenTime();
                     break;
+
                 case REMOVE_ENTRY:
                     printEveryEntry();
-                    if (todoArray.size() == 0) {
-                        break;
-                    }
-                    else {
-                        int entryToRemove = userInput.getUserEntryToRemove();
-                        removeTodoListEntry(entryToRemove);
-                        break;
-                    }
+                    tryToRemoveEntry();
+                    break;
+
                 case PRINT_OUT_LIST:
                     printTodoList();
                     break;
             }
 
         } while(choice != QUIT);
+    }
+
+    private void tryToRemoveEntry() {
+        if (todoArray.size() != 0) {
+            int entryToRemove = userInput.getUserEntryToRemove();
+            removeTodoListEntry(entryToRemove);
+        }
+    }
+
+    private void tryToSave() {
+        String todoListNameForIO;
+        todoListNameForIO = userInput.promptUserToSave();
+        if (todoListNameForIO != null) {
+            save(todoListNameForIO);
+        }
+    }
+
+    private void tryToLoad() {
+        String todoListNameForIO;
+        todoListNameForIO = userInput.promptUserForLoad();
+        if (todoListNameForIO != null) {
+            load(todoListNameForIO);
+        }
+    }
+
+    private void addEntry() {
+        String userEntry;
+        String date;
+        do {
+            userEntry = userInput.getUserEntryToAdd();
+            date = userInput.getUserEntryForDate();
+        }
+        while(!addTodoListEntry(userEntry, date));
     }
 
     // MODIFIES: this
@@ -154,6 +177,7 @@ public class TodoList {
         }
     }
 
+
     // EFFECTS: Prints out list and all its contents with index number
     private void printEveryEntry() {
         int index = 0;
@@ -176,4 +200,53 @@ public class TodoList {
         return todoArray;
     }
 
+    @Override
+    // REQUIRES: Valid file containing only serialized ArrayList<TodoListEntry>
+    // MODIFIES: this
+    // EFFECTS: loads file and generates list from its contents, prints out its contents if not empty
+    public void load(String fileName) {
+        try {
+            FileInputStream inFile = new FileInputStream(fileName);
+            ObjectInputStream inputStream = new ObjectInputStream(inFile);
+
+            todoArray = (ArrayList<TodoListEntry>)inputStream.readObject();
+
+            inputStream.close();
+            inFile.close();
+
+            if (todoArray.size() > 0) {
+                System.out.println("Successfully loaded todo-list!");
+                printEveryEntry();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        catch (ClassNotFoundException e) {
+            System.out.println("Class not found!");
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    // EFFECTS: Saves state of TodoList in a file
+    public void save(String fileName) {
+        try {
+            FileOutputStream outFile = new FileOutputStream(fileName);
+            ObjectOutputStream outputStream = new ObjectOutputStream(outFile);
+
+            outputStream.writeObject(todoArray);
+
+            outputStream.close();
+            outFile.close();
+            System.out.println("Successfully saved todo-list!");
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("File could not be opened or not found!");
+        }
+        catch (IOException e) {
+            System.out.println("File could not be opened!");
+        }
+
+    }
 }

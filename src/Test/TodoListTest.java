@@ -173,7 +173,7 @@ public class TodoListTest {
         TodoList t1 = new TodoList(2);
 
 
-        addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, HiGh, 3" , date, date);
+        addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, HiGh, 3", date, date);
         addEntriesToTwoLists(t1, "Basketball, LOW, 3", "Basketball, LOW, 3", date, date);
 
         sortTest(t1);
@@ -192,6 +192,7 @@ public class TodoListTest {
     @Test
     public void sortOrderedArrayDifferentPrioritiesDifferentTimeTwoElements() {
         TodoList t1 = new TodoList(2);
+
 
         addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, HiGh, 3", date, date);
         addEntriesToTwoLists(t1, "Basketball, LOW, 4", "Basketball, LOW, 4", date, date);
@@ -256,9 +257,11 @@ public class TodoListTest {
     public void sortUnorderedArrayDifferentPriorityDateSameTime() {
         TodoList t1 = new TodoList(2);
 
-        addEntriesToTwoLists(t1, "Basketball, High, 3", "Basketball, Medium, 4" ,
+
+        addEntriesToTwoLists(t1, "Basketball, High, 3", "Basketball, Medium, 4",
                 date, "2018-12-29");
-        addEntriesToTwoLists(t1, "Basketball, Medium, 4", "Basketball, High, 3" ,
+
+        addEntriesToTwoLists(t1, "Basketball, Medium, 4", "Basketball, High, 3",
                 "2018-12-29", date);
 
         sortTest(t1);
@@ -304,6 +307,37 @@ public class TodoListTest {
 
         assertTrue(todo.removeTodoListEntry(1));
         assertTrue(todoList.size() == 1);
+    }
+
+    @Test
+    public void saveTodoListEmpty() {
+        todo.save(TodoList.IO_FILE);
+
+        loadFile(0);
+    }
+
+    @Test
+    public void saveTodoListOneEntry() {
+        todo.addTodoListEntry("Basketball, HiGh, 000003", date);
+        todo.save(TodoList.IO_FILE);
+        loadFile(1);
+    }
+
+    @Test
+    public void saveTodoListMultipleEntries() {
+        todo.addTodoListEntry("Basketball, HiGh, 000003", date);
+        todo.addTodoListEntry("Football, HiGh, 4", date);
+        todo.addTodoListEntry("Pokemon, high, 3", date);
+
+        todo.save(TodoList.IO_FILE);
+        loadFile(3);
+
+    }
+
+    private void loadFile(int numSaved) {
+        TodoList t1 = new TodoList(2);
+        t1.load(TodoList.IO_FILE);
+        assertTrue(t1.getTodoArray().size() == numSaved);
     }
 
 }
