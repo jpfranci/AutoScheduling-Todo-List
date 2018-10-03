@@ -55,15 +55,15 @@ public class TodoListTest {
 
     @Test
     public void addValidEntryThenInvalidEntryTest() {
-        entry = "Play Basketball today, high, 3";
-        successfulAddTest(entry, "Play Basketball today", "high", 3, 0, date);
+        entry = "Play Basketball today, high, 3.01";
+        successfulAddTest(entry, "Play Basketball today", "high", 3.01, 0, date);
 
         entry = "Basketball,high,3";
         unsuccessfulAddTest(entry,1, date);
     }
 
     private void unsuccessfulAddTest(String entry, int index, String date) {
-        todo.addTodoListEntry(entry, date);
+        todo.tryToAddTodoListEntry(entry, date);
         assertTrue(todoList.size() == index);
     }
 
@@ -103,7 +103,7 @@ public class TodoListTest {
                                    double time, int index, String date) {
         TodoListEntry testEntry;
         testEntry = new TodoListEntry(activity, priority, time, date);
-        todo.addTodoListEntry(entry, date);
+        todo.tryToAddTodoListEntry(entry, date);
         assertTrue(testEntry.getTodoInfo().equals(todoList.get(index).getTodoInfo()));
     }
 
@@ -147,13 +147,13 @@ public class TodoListTest {
     }
 
     private void invalidDateTest(String entry, String date, int index) {
-        todo.addTodoListEntry(entry, date);
+        todo.tryToAddTodoListEntry(entry, date);
         assertTrue(todoList.get(index).getDueDate().equals
                 (LocalDate.now().plusDays(TodoListEntry.DEFAULT_DUE_DATE)));
     }
 
     private void validDateTest(String entry, String date, int index) {
-        todo.addTodoListEntry(entry, date);
+        todo.tryToAddTodoListEntry(entry, date);
         assertTrue(todoList.get(index).getDueDate().equals
                 (LocalDate.parse(date)));
     }
@@ -162,8 +162,8 @@ public class TodoListTest {
     @Test
     public void sortListOfOneElement() {
         TodoList t1 = new TodoList(2);
-        addEntriesToTwoLists(t1, "Basketball, LOW, 3",
-                "Basketball, LOW, 3", date, date);
+        addEntriesToTwoLists(t1, "Basketball, LOW, 3.5",
+                "Basketball, LOW, 3.5", date, date);
 
         sortTest(t1);
     }
@@ -270,8 +270,8 @@ public class TodoListTest {
 
     private void addEntriesToTwoLists (TodoList t1, String toAddToT1, String ToAddToTodo,
                                        String dateT1, String dateTodo) {
-        t1.addTodoListEntry(toAddToT1, dateT1);
-        todo.addTodoListEntry(ToAddToTodo, dateTodo);
+        t1.tryToAddTodoListEntry(toAddToT1, dateT1);
+        todo.tryToAddTodoListEntry(ToAddToTodo, dateTodo);
     }
 
     private void sortTest(TodoList t1) {
@@ -288,22 +288,22 @@ public class TodoListTest {
 
     @Test
     public void removeEntryFromListOneEntry() {
-        todo.addTodoListEntry("Basketball, HiGh, 000003", date);
+        todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
         assertTrue(todo.removeTodoListEntry(0));
         assertTrue(todoList.size() == 0);
     }
 
     @Test
     public void removeEntryFromIndexOutOfRangeOneEntry() {
-        todo.addTodoListEntry("Basketball, HiGh, 000003", date);
+        todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
         assertFalse(todo.removeTodoListEntry(1));
         assertTrue(todoList.size() == 1);
     }
 
     @Test
     public void removeEntryFromTwoEntries() {
-        todo.addTodoListEntry("Basketball, HiGh, 000003", date);
-        todo.addTodoListEntry("Football, HiGh, 4", date);
+        todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
+        todo.tryToAddTodoListEntry("Football, HiGh, 4", date);
 
         assertTrue(todo.removeTodoListEntry(1));
         assertTrue(todoList.size() == 1);
@@ -318,16 +318,16 @@ public class TodoListTest {
 
     @Test
     public void saveTodoListOneEntry() {
-        todo.addTodoListEntry("Basketball, HiGh, 000003", date);
+        todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
         todo.save(TodoList.IO_FILE);
         loadFile(1);
     }
 
     @Test
     public void saveTodoListMultipleEntries() {
-        todo.addTodoListEntry("Basketball, HiGh, 000003", date);
-        todo.addTodoListEntry("Football, HiGh, 4", date);
-        todo.addTodoListEntry("Pokemon, high, 3", date);
+        todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
+        todo.tryToAddTodoListEntry("Football, HiGh, 4", date);
+        todo.tryToAddTodoListEntry("Pokemon, high, 3", date);
 
         todo.save(TodoList.IO_FILE);
         loadFile(3);

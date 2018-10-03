@@ -21,28 +21,31 @@ public class TodoList implements Loadable, Saveable {
     }
 
     // MODIFIES: this
-    // EFFECTS: Prompts user to choose action for TodoList: add entry, remove entry, print out list,
-    // or quit program and saves it
-    // if list is empty, automatically prompts to add an entry
+    // EFFECTS: Loads a TodoList file depending on user input and continuously prompts user to choose action
+    // for TodoList until they choose quit, then quits program and either saves it or quits without saving
     public TodoList() {
         tryToLoad();
-
-        if (todoArray.size() == 0) {
-            addEntry();
-        }
-
         handleCommand();
         tryToSave();
     }
 
+    // MODIFIES: this
+    // EFFECTS: Prompts user to choose action for TodoList: add entry, remove entry, print out list, or
+    // quit program and saves it
+    // if list is empty, automatically prompts to add an entry
     private void handleCommand() {
         int choice;
+
+        if (todoArray.size() == 0) {
+            addTodoListEntry();
+        }
+
         do {
             choice = userInput.promptUserForChoice();
 
             switch (choice) {
                 case ADD_ENTRY:
-                    addEntry();
+                    addTodoListEntry();
                     sortTodoListByPriorityThenDateThenTime();
                     break;
 
@@ -59,6 +62,8 @@ public class TodoList implements Loadable, Saveable {
         } while(choice != QUIT);
     }
 
+    // MODIFIES: this
+    // EFFECTS: Gets user input to remove from TodoList and removes if valid
     private void tryToRemoveEntry() {
         if (todoArray.size() != 0) {
             int entryToRemove = userInput.getUserEntryToRemove();
@@ -66,36 +71,43 @@ public class TodoList implements Loadable, Saveable {
         }
     }
 
+    // EFFECTS: Prompts user if they want to save TodoList or quit without saving and saves
+    // TodoList into file
     private void tryToSave() {
-        String todoListNameForIO;
-        todoListNameForIO = userInput.promptUserToSave();
+        String todoListNameForIO = userInput.promptUserToSave();
         if (todoListNameForIO != null) {
             save(todoListNameForIO);
         }
     }
 
+    // MODIFIES: this
+    // EFFECTS: Looks at DESTINATION folder and sees if there are valid TodoList files to load
+    // if there are prompts the user if they would like to load one
+    // and modifies this to be equal to the contents of the file
     private void tryToLoad() {
-        String todoListNameForIO;
-        todoListNameForIO = userInput.promptUserForLoad();
+        String todoListNameForIO = userInput.promptUserForLoad();
         if (todoListNameForIO != null) {
             load(todoListNameForIO);
         }
     }
 
-    private void addEntry() {
+    // MODIFIES: this
+    // EFFECTS: Continuously prompts user to add a TodoListEntry until they add a valid entry
+    // must follow proper format
+    private void addTodoListEntry() {
         String userEntry;
         String date;
         do {
             userEntry = userInput.getUserEntryToAdd();
             date = userInput.getUserEntryForDate();
         }
-        while(!addTodoListEntry(userEntry, date));
+        while(!tryToAddTodoListEntry(userEntry, date));
     }
 
     // MODIFIES: this
     // EFFECTS: Returns true if String matches format required and adds TodoListEntry represented by
     // String into TodoList
-    public boolean addTodoListEntry(String userEntry, String date) {
+    public boolean tryToAddTodoListEntry(String userEntry, String date) {
        if (inputFollowsFormat(userEntry)) {
            parseString(userEntry, date);
            return true;
@@ -116,7 +128,7 @@ public class TodoList implements Loadable, Saveable {
         TodoListEntry todoListEntry;
         String userEntries[] = userEntry.split(", ");
 
-        int time = Integer.parseInt(userEntries[2]);
+        double time = Double.parseDouble(userEntries[2]);
         if (dateFollowsFormat(date)) {
             todoListEntry = new TodoListEntry(userEntries[0], userEntries[1], time, date);
             todoArray.add(todoListEntry);
@@ -135,7 +147,7 @@ public class TodoList implements Loadable, Saveable {
 
     // EFFECTS: Checks if input follows the format of Activity, priority(high, medium, low), time
     private boolean inputFollowsFormat(String userEntry) {
-       return userEntry.matches("(\\w *)+, (?i)(high|medium|low), 0*[1-9][0-9]*");
+       return userEntry.matches("(\\w *)+, (?i)(high|medium|low), 0*[1-9].?[0-9]*");
     }
 
     // EFFECTS: Checks if date is valid and is in the 2000s
@@ -206,7 +218,8 @@ public class TodoList implements Loadable, Saveable {
     // EFFECTS: loads file and generates list from its contents, prints out its contents if not empty
     public void load(String fileName) {
         try {
-            FileInputStream inFile = new FileInputStream(fileName);
+            FileInputStream inFile = new FileInputStream(TodoListFile.DIRECTORY
+                    + File.separator + fileName);
             ObjectInputStream inputStream = new ObjectInputStream(inFile);
 
             todoArray = (ArrayList<TodoListEntry>)inputStream.readObject();
@@ -232,7 +245,8 @@ public class TodoList implements Loadable, Saveable {
     // EFFECTS: Saves state of TodoList in a file
     public void save(String fileName) {
         try {
-            FileOutputStream outFile = new FileOutputStream(fileName);
+            FileOutputStream outFile = new FileOutputStream(TodoListFile.DIRECTORY
+                    + File.separator + fileName);
             ObjectOutputStream outputStream = new ObjectOutputStream(outFile);
 
             outputStream.writeObject(todoArray);
