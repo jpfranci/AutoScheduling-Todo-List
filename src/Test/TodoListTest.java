@@ -1,9 +1,11 @@
 package Test;
 
+import Model.LeisureTodoListEntry;
+import Model.PriorityTodoListEntry;
 import Model.TodoList;
-import Model.TodoListEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ui.UserInput;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,13 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class TodoListTest {
     private TodoList todo;
     private String entry;
-    private ArrayList<TodoListEntry> todoList;
+    private ArrayList<PriorityTodoListEntry> priorityTodoList;
+    private ArrayList<LeisureTodoListEntry> leisureTodoList;
     private String date = "2018-12-30";
 
     @BeforeEach
     public void setUp() {
         todo = new TodoList(2);
-        todoList = todo.getTodoArray();
+        priorityTodoList = todo.getPriorityTodoArray();
+        leisureTodoList = todo.getLeisureTodoArray();
     }
 
     @Test
@@ -64,7 +68,7 @@ public class TodoListTest {
 
     private void unsuccessfulAddTest(String entry, int index, String date) {
         todo.tryToAddTodoListEntry(entry, date);
-        assertTrue(todoList.size() == index);
+        assertTrue(priorityTodoList.size() == index);
     }
 
     @Test
@@ -101,10 +105,10 @@ public class TodoListTest {
 
     private void successfulAddTest(String entry, String activity, String priority,
                                    double time, int index, String date) {
-        TodoListEntry testEntry;
-        testEntry = new TodoListEntry(activity, priority, time, date);
+        PriorityTodoListEntry testEntry;
+        testEntry = new PriorityTodoListEntry(activity, priority, time, date);
         todo.tryToAddTodoListEntry(entry, date);
-        assertTrue(testEntry.getTodoInfo().equals(todoList.get(index).getTodoInfo()));
+        assertTrue(testEntry.getTodoInfo().equals(priorityTodoList.get(index).getTodoInfo()));
     }
 
     @Test
@@ -148,13 +152,13 @@ public class TodoListTest {
 
     private void invalidDateTest(String entry, String date, int index) {
         todo.tryToAddTodoListEntry(entry, date);
-        assertTrue(todoList.get(index).getDueDate().equals
-                (LocalDate.now().plusDays(TodoListEntry.DEFAULT_DUE_DATE)));
+        assertTrue(priorityTodoList.get(index).getDueDate().equals
+                (LocalDate.now().plusDays(PriorityTodoListEntry.DEFAULT_DUE_DATE)));
     }
 
     private void validDateTest(String entry, String date, int index) {
         todo.tryToAddTodoListEntry(entry, date);
-        assertTrue(todoList.get(index).getDueDate().equals
+        assertTrue(priorityTodoList.get(index).getDueDate().equals
                 (LocalDate.parse(date)));
     }
 
@@ -165,7 +169,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, LOW, 3.5",
                 "Basketball, LOW, 3.5", date, date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -176,7 +180,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, HiGh, 3", date, date);
         addEntriesToTwoLists(t1, "Basketball, LOW, 3", "Basketball, LOW, 3", date, date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -186,7 +190,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, LOW, 3", date, date);
         addEntriesToTwoLists(t1, "Basketball, LOW, 3", "Basketball, HiGh, 3", date, date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -197,7 +201,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, HiGh, 3", date, date);
         addEntriesToTwoLists(t1, "Basketball, LOW, 4", "Basketball, LOW, 4", date, date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -207,7 +211,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, LOW, 4",date, date);
         addEntriesToTwoLists(t1, "Basketball, LOW, 4", "Basketball, HiGh, 3",date, date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -217,7 +221,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, HiGh, 4", "Basketball, HiGh, 4" , date, date);
         addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, HiGh, 3" , date, date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -227,7 +231,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, HiGh, 4", "Basketball, HIgh, 3" , date, date);
         addEntriesToTwoLists(t1, "Basketball, HiGh, 3", "Basketball, HIgh, 4" , date, date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -238,7 +242,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, Medium, 3", "Basketball, Medium, 2" , date, date);
         addEntriesToTwoLists(t1, "Basketball, Medium, 2", "Basketball, Medium, 3" , date, date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -250,7 +254,7 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, High, 4", "Basketball, High, 3" ,
                 "2018-12-31", date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
     }
 
     @Test
@@ -264,7 +268,43 @@ public class TodoListTest {
         addEntriesToTwoLists(t1, "Basketball, Medium, 4", "Basketball, High, 3",
                 "2018-12-29", date);
 
-        sortTest(t1);
+        sortTestPriority(t1);
+    }
+
+    @Test
+    public void sortUnorderedLeisureArraySameTimeOneElement() {
+        TodoList t1 = new TodoList(2);
+
+        addEntriesToTwoLists(t1, "Basketball, 3", "Basketball, 3", date, date);
+
+        sortTestLeisure(t1);
+    }
+
+    @Test
+    public void sortUnorderedLeisureArraySameTimeTwoElements() {
+        TodoList t1 = new TodoList(2);
+
+        addEntriesToTwoLists(t1, "Basketball, 3", "Basketball, 3", date, date);
+        addEntriesToTwoLists(t1, "Soccer, 3", "Soccer, 3", date, date);
+
+        sortTestLeisure(t1);
+    }
+
+    @Test
+    public void sortUnorderedLeisureArrayDifferentTimesThreeElements() {
+        TodoList t1 = new TodoList(2);
+
+        addEntriesToTwoLists(t1, "Basketball, 5", "Soccer, 4", date, date);
+        addEntriesToTwoLists(t1, "Soccer, 4", "Basketball, 5", date, date);
+        addEntriesToTwoLists(t1, "Baseball, 4", "Baseball, 4", date, date);
+
+
+        sortTestLeisure(t1);
+    }
+
+    private void sortTestLeisure(TodoList t1) {
+        todo.sortLeisureTodoList();
+        assertTrue(t1.getLeisureTodoArray().equals(todo.getLeisureTodoArray()));
     }
 
 
@@ -274,30 +314,41 @@ public class TodoListTest {
         todo.tryToAddTodoListEntry(ToAddToTodo, dateTodo);
     }
 
-    private void sortTest(TodoList t1) {
-        todo.sortTodoListByPriorityThenDateThenTime();
+    private void sortTestPriority(TodoList t1) {
+        todo.sortPriorityTodoListByPriorityThenDateThenTime();
 
-        assertTrue(t1.getTodoArray().equals(todo.getTodoArray()));
+        assertTrue(t1.getPriorityTodoArray().equals(todo.getPriorityTodoArray()));
     }
 
     @Test
-    public void tryToRemoveEntryFromEmptyList() {
-        assertFalse(todo.removeTodoListEntry(1));
-        assertTrue(todoList.size() == 0);
+    public void tryToRemoveEntryFromEmptyLists() {
+        assertFalse(todo.removeTodoListEntry(1, UserInput.PRIORITY_ENTRY));
+        assertFalse(todo.removeTodoListEntry(1, UserInput.PRIORITY_ENTRY));
+
+        assertTrue(priorityTodoList.size() == 0);
+        assertTrue(leisureTodoList.size() == 0);
     }
 
     @Test
     public void removeEntryFromListOneEntry() {
         todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
-        assertTrue(todo.removeTodoListEntry(0));
-        assertTrue(todoList.size() == 0);
+        assertTrue(todo.removeTodoListEntry(0, UserInput.PRIORITY_ENTRY));
+        assertTrue(priorityTodoList.size() == 0);
+
+        todo.tryToAddTodoListEntry("Basketball, 000003", date);
+        assertTrue(todo.removeTodoListEntry(0, UserInput.LEISURE_ENTRY));
+        assertTrue(leisureTodoList.size() == 0);
     }
 
     @Test
     public void removeEntryFromIndexOutOfRangeOneEntry() {
         todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
-        assertFalse(todo.removeTodoListEntry(1));
-        assertTrue(todoList.size() == 1);
+        assertFalse(todo.removeTodoListEntry(1, UserInput.PRIORITY_ENTRY));
+        assertTrue(priorityTodoList.size() == 1);
+
+        todo.tryToAddTodoListEntry("Basketball, 000003", date);
+        assertFalse(todo.removeTodoListEntry(1, UserInput.LEISURE_ENTRY));
+        assertTrue(leisureTodoList.size() == 1);
     }
 
     @Test
@@ -305,22 +356,28 @@ public class TodoListTest {
         todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
         todo.tryToAddTodoListEntry("Football, HiGh, 4", date);
 
-        assertTrue(todo.removeTodoListEntry(1));
-        assertTrue(todoList.size() == 1);
+        assertTrue(todo.removeTodoListEntry(1, UserInput.PRIORITY_ENTRY));
+        assertTrue(priorityTodoList.size() == 1);
+
+        todo.tryToAddTodoListEntry("Basketball, 000003", date);
+        todo.tryToAddTodoListEntry("Football, 4", date);
+
+        assertTrue(todo.removeTodoListEntry(1, UserInput.LEISURE_ENTRY));
+        assertTrue(priorityTodoList.size() == 1);
     }
 
     @Test
     public void saveTodoListEmpty() {
         todo.save(TodoList.IO_FILE);
 
-        loadFile(0);
+        loadFile(0,0);
     }
 
     @Test
     public void saveTodoListOneEntry() {
         todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
         todo.save(TodoList.IO_FILE);
-        loadFile(1);
+        loadFile(1,0);
     }
 
     @Test
@@ -328,16 +385,18 @@ public class TodoListTest {
         todo.tryToAddTodoListEntry("Basketball, HiGh, 000003", date);
         todo.tryToAddTodoListEntry("Football, HiGh, 4", date);
         todo.tryToAddTodoListEntry("Pokemon, high, 3", date);
+        todo.tryToAddTodoListEntry("Pokemon, 4", null);
 
         todo.save(TodoList.IO_FILE);
-        loadFile(3);
+        loadFile(3, 1);
 
     }
 
-    private void loadFile(int numSaved) {
+    private void loadFile(int numSavedPriority, int numSavedLeisure) {
         TodoList t1 = new TodoList(2);
         t1.load(TodoList.IO_FILE);
-        assertTrue(t1.getTodoArray().size() == numSaved);
+        assertTrue(t1.getPriorityTodoArray().size() == numSavedPriority &&
+        t1.getLeisureTodoArray().size() == numSavedLeisure);
     }
 
 }

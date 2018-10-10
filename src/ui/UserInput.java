@@ -7,10 +7,14 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class UserInput {
-    public static final int LOAD_LIST_OR_SAVE = 1;
-    public static final int CREATE_NEW_LIST_OR_QUIT = 0;
-    public static final String LOAD = "load";
-    public static final String SAVE = "save";
+    private static final int LOAD_LIST_OR_SAVE = 1;
+    private static final int CREATE_NEW_LIST_OR_QUIT = 0;
+    private static final String LOAD = "load";
+    private static final String SAVE = "save";
+    public static final int LEISURE_ENTRY = 0;
+    public static final int PRIORITY_ENTRY = 1;
+    public static final String ADD = "add";
+    public static final String REMOVE = "remove";
 
     private Scanner scanner = new Scanner(System.in);
     private TodoListFile todoListFile = new TodoListFile();
@@ -48,7 +52,7 @@ public class UserInput {
     private int getUserChoiceForIO(String option) {
         int choice = scanInt();
 
-        while (choice < 0 || choice > 1) {
+        while (choice < CREATE_NEW_LIST_OR_QUIT || choice > LOAD_LIST_OR_SAVE) {
             printPromptIO(option);
             choice = scanInt();
         }
@@ -58,12 +62,14 @@ public class UserInput {
 
     private void printPromptIO(String option) {
         if (option.equals(LOAD)) {
-            System.out.println("Please enter a valid number:[" + LOAD_LIST_OR_SAVE + "] to load a TodoList from file\n" +
-                    "[" + CREATE_NEW_LIST_OR_QUIT + "] to create a new TodoList");
+            System.out.println("Please enter a valid number:[" + LOAD_LIST_OR_SAVE + "] to load a" +
+                    " TodoList from file\n" + "[" + CREATE_NEW_LIST_OR_QUIT + "] " +
+                    "to create a new TodoList");
         }
         else {
-            System.out.println("Please enter a valid number:[" + LOAD_LIST_OR_SAVE + "] to save TodoList to file\n" +
-                    "[" + CREATE_NEW_LIST_OR_QUIT + "] to quit without saving");
+            System.out.println("Please enter a valid number:[" + LOAD_LIST_OR_SAVE + "]" +
+                    " to save TodoList to file\n" + "[" + CREATE_NEW_LIST_OR_QUIT + "] " +
+                    "to quit without saving");
         }
     }
 
@@ -88,6 +94,22 @@ public class UserInput {
         return todoListName;
 
     }
+
+    // EFFECTS: Continuously prompts user for what type of entry they would like to enter or remove
+    // returns if type is valid
+    public int getUserEntryType(String type) {
+        int choice;
+
+            do {
+                System.out.println("Please enter:\n[" + LEISURE_ENTRY + "] to "+type+" a leisure entry " +
+                        "(only activity " + "and time needed)\n[" + PRIORITY_ENTRY + "] to " +type+"" +
+                        " a priority entry (activity, time, " + "priority and date needed)");
+                choice = scanInt();
+            }
+            while (choice < LEISURE_ENTRY || choice > PRIORITY_ENTRY);
+
+        return choice;
+}
 
     // EFFECTS: Prompts user to choose between saving TodoList to file or to quit without saving
     public String promptUserToSave() {
@@ -133,10 +155,18 @@ public class UserInput {
     }
 
     // EFFECTS: Prompts user for entry to add to list and returns the string that the user entered
-    public String getUserEntryToAdd() {
+    public String getPriorityUserEntryToAdd() {
         System.out.println("\nPlease enter a todo-list entry as follows:\nActivity, priority " +
-                "(low, medium, or high), time needed (in hrs), due date");
+                "(low, medium, or high), time needed (in hrs)");
         System.out.println("An example would be: Play Basketball, medium, 4");
+
+        return scanString();
+    }
+
+    // EFFECTS: Prompts user for entry to add to list and returns the string that the user entered
+    public String getLeisureUserEntryToAdd() {
+        System.out.println("\nPlease enter a todo-list entry as follows:\nActivity, time needed (in hrs)");
+        System.out.println("An example would be: Play Basketball, 4");
 
         return scanString();
     }
