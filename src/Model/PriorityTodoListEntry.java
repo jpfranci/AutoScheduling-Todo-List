@@ -2,6 +2,7 @@ package Model;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 
 public class PriorityTodoListEntry extends TodoListEntry {
     private static final int HIGH = 1;
@@ -10,8 +11,8 @@ public class PriorityTodoListEntry extends TodoListEntry {
     public static final int DEFAULT_DUE_DATE = 7;
 
     public static final String HIGH_STRING = "High";
-    public static final String MEDIUM_STRING = "Medium";
-    public static final String LOW_STRING = "Low";
+    private static final String MEDIUM_STRING = "Medium";
+    private static final String LOW_STRING = "Low";
 
     private int priority;
     private LocalDate dueDate;
@@ -80,7 +81,15 @@ public class PriorityTodoListEntry extends TodoListEntry {
     @Override
     // EFFECTS: checks if object is a PriorityTodoListEntry and if it is equal to this
     public boolean equals(Object obj) {
-        if (obj instanceof PriorityTodoListEntry) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj.getClass() == getClass()) {
             PriorityTodoListEntry entry = (PriorityTodoListEntry) obj;
             return activity.equals(entry.getActivity())
                     && priority == entry.getPriority()
@@ -95,7 +104,10 @@ public class PriorityTodoListEntry extends TodoListEntry {
     // priority (high, medium, low), ascending order for dates, and descending order for time)
     // returns 1 if o is ahead in PriorityTodoListEntry order than this, 0 if equal, and -1 if behind in order
     public int compareTo(TodoListEntry o) {
-        if(o instanceof PriorityTodoListEntry) {
+        if (o instanceof LeisureTodoListEntry) {
+            return -1;
+        }
+        else if (o instanceof PriorityTodoListEntry) {
             PriorityTodoListEntry entry = (PriorityTodoListEntry) o;
 
             int comparePriority = Integer.compare(priority, entry.getPriority());
@@ -119,4 +131,8 @@ public class PriorityTodoListEntry extends TodoListEntry {
         return 0;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(priority, dueDate);
+    }
 }

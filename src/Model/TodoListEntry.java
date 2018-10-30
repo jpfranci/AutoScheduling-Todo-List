@@ -1,17 +1,19 @@
 package Model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public abstract class TodoListEntry implements Comparable<TodoListEntry>, Serializable {
-    protected String activity;
-    protected double time;
+    String activity;
+    double time;
+    TodoList todoList;
 
     public TodoListEntry(String activity, double time) {
         this.activity = activity;
         this.time = time;
     }
 
-    // EFFECTS: Returns the contents of TodoListEntry in form of a formatted string
+    // EFFECTS: Returns th  e contents of TodoListEntry in form of a formatted string
     public abstract String getTodoInfo();
 
     // EFFECTS: Returns the activity
@@ -25,11 +27,20 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry>, Serial
     }
 
     @Override
-    // EFFECTS: checks if object is equal to this
-    public abstract boolean equals(Object obj);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TodoListEntry)) return false;
+        TodoListEntry that = (TodoListEntry) o;
+        return Double.compare(that.time, time) == 0 &&
+                Objects.equals(activity, that.activity) &&
+                Objects.equals(todoList, that.todoList);
+    }
 
     @Override
-    // EFFECTS: returns 1 if o is ahead in TodoListEntry order than this,
-    // 0 if equal, and -1 if behind in order
-    public abstract int compareTo(TodoListEntry o);
+    public int hashCode() {
+
+        return Objects.hash(activity, time);
+    }
+
+
 }

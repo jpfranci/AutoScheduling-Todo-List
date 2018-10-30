@@ -1,9 +1,9 @@
 package ui;
 
 import Model.TodoListFile;
-import Model.TodoList;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class UserInput {
@@ -11,41 +11,34 @@ public class UserInput {
     private static final int CREATE_NEW_LIST_OR_QUIT = 0;
     private static final String LOAD = "load";
     private static final String SAVE = "save";
+    private static final int NON_SUCCESSFUL_INT = -1;
     public static final int LEISURE_ENTRY = 0;
     public static final int PRIORITY_ENTRY = 1;
     public static final String ADD = "add";
     public static final String REMOVE = "remove";
 
     private Scanner scanner = new Scanner(System.in);
-    private TodoListFile todoListFile = new TodoListFile();
+    private ListPrinter listPrinter;
 
+    public void setListPrinter(ListPrinter listPrinter) {
+        this.listPrinter = listPrinter;
+    }
 
     // EFFECTS: Tries to find any TodoList files, if found then prints out files and prompts user
     // to either load a TodoList (return name of TodoList file) or create a new one (return null)
     // else does nothing and returns null
-    public String promptUserForLoad() {
-        ArrayList<String> listTodoListNames = todoListFile.listFiles();
+    public String promptUserForLoad(ArrayList<String> listTodoListNames) {
+        System.out.println("Todo List files found:");
+        System.out.println("Please press:\n[" + LOAD_LIST_OR_SAVE + "] to load a TodoList from file\n" +
+                "[" + CREATE_NEW_LIST_OR_QUIT + "] to create a new TodoList");
 
-        if (listTodoListNames.size() != 0) {
-            System.out.println("Todo List files found:");
-            System.out.println("Please press:\n["+ LOAD_LIST_OR_SAVE +"] to load a TodoList from file\n" +
-                    "["+ CREATE_NEW_LIST_OR_QUIT +"] to create a new TodoList");
+        int choice = getUserChoiceForIO(LOAD);
 
-            int choice = getUserChoiceForIO(LOAD);
-
-            if (choice != CREATE_NEW_LIST_OR_QUIT) {
-                return getTodoListToLoad(listTodoListNames);
-            }
+        if (choice != CREATE_NEW_LIST_OR_QUIT) {
+            return getTodoListToLoad(listTodoListNames);
         }
         System.out.println("Creating a new TodoList!");
         return null;
-    }
-
-    // EFFECTS: Prints out TodoList file names
-    private void printTodoListFileNames(ArrayList<String> listTodoListNames) {
-        for (String todoListName : listTodoListNames ) {
-            System.out.println("File name: " +todoListName);
-        }
     }
 
     // EFFECTS: Continuously prompts user until proper choice for loading or creating new list is entered
@@ -78,7 +71,7 @@ public class UserInput {
     private String getTodoListToLoad(ArrayList<String> listTodoListNames) {
         String todoListName;
 
-        printTodoListFileNames(listTodoListNames);
+        listPrinter.printTodoListFileNames(listTodoListNames);
         System.out.println("Please enter the name for the TodoList entry you will want to load");
 
         todoListName = scanString();
@@ -86,7 +79,7 @@ public class UserInput {
         while (!listTodoListNames.contains(todoListName)) {
             System.out.println("Error: Please enter a valid TodoList file name.\nMake " +
                     "sure to type out entry exactly as seen.");
-            printTodoListFileNames(listTodoListNames);
+            listPrinter.printTodoListFileNames(listTodoListNames);
             todoListName = scanString();
         }
 
@@ -144,12 +137,12 @@ public class UserInput {
     public int promptUserForChoice() {
         int choice;
 
-        System.out.println("\nPlease enter the number that you would like to do next\n[" +TodoList.ADD_ENTRY+ "] add entry \n[" +
-                TodoList.REMOVE_ENTRY+ "] remove an entry \n[" +TodoList.PRINT_OUT_LIST+ "] print " + "out your list " +
-                "\n[" +TodoList.QUIT+ "] quit");
+        System.out.println("\nPlease enter the number that you would like to do next\n[" + CommandHandler.ADD_ENTRY+ "] add entry \n[" +
+                CommandHandler.REMOVE_ENTRY+ "] remove an entry \n[" + CommandHandler.PRINT_OUT_LIST+ "] print " + "out your list " +
+                "\n[" + CommandHandler.QUIT+ "] quit");
         do {
             choice = scanInt();
-        } while(choice < TodoList.QUIT || choice > TodoList.PRINT_OUT_LIST); // checks for valid input
+        } while(choice < CommandHandler.QUIT || choice > CommandHandler.PRINT_OUT_LIST); // checks for valid input
 
         return choice;
     }
@@ -187,9 +180,18 @@ public class UserInput {
     }
 
     private int scanInt() {
-        int choice = scanner.nextInt();
-        scanner.nextLine();
-        return choice;
+        try {
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            return choice;
+        } catch (InputMismatchException e) {
+            System.out.println("Input is not a valid integer. Please try again");
+            scanner.nextLine();
+        } catch (NumberFormatException e) {
+            System.out.println("Input is not an integer. Please try again!");
+            scanner.nextLine();
+        }
+        return NON_SUCCESSFUL_INT;
     }
 
     private String scanString() {
