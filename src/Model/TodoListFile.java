@@ -3,6 +3,7 @@ package Model;
 import java.io.*;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TodoListFile implements Loadable, Saveable{
     public static final String FILE_EXTENSION = ".ser";
@@ -49,11 +50,12 @@ public class TodoListFile implements Loadable, Saveable{
     // EFFECTS: loads file and generates list from its contents, prints out its contents if not empty
     public void load(String fileName) {
         try {
-            FileInputStream inFile = new FileInputStream(TodoListFile.DIRECTORY
+            FileInputStream inFile = new FileInputStream(DIRECTORY
                     + File.separator + fileName);
             ObjectInputStream inputStream = new ObjectInputStream(inFile);
 
             todoList.setTodoArray((ArrayList<TodoListEntry>) inputStream.readObject());
+            todoList.setTodoListMap((HashMap<String, TodoListEntry>) inputStream.readObject());
 
             inputStream.close();
             inFile.close();
@@ -70,15 +72,16 @@ public class TodoListFile implements Loadable, Saveable{
     // EFFECTS: Saves state of TodoList in a file
     public void save(String fileName) {
         try {
-            FileOutputStream outFile = new FileOutputStream(TodoListFile.DIRECTORY
+            FileOutputStream outFile = new FileOutputStream(DIRECTORY
                     + File.separator + fileName);
             ObjectOutputStream outputStream = new ObjectOutputStream(outFile);
 
             outputStream.writeObject(todoList.getTodoArray());
+            outputStream.writeObject(todoList.getTodoListMap());
 
             outputStream.close();
             outFile.close();
-            System.out.println("Successfully saved todo-list to " +TodoListFile.DIRECTORY
+            System.out.println("Successfully saved todo-list to " +DIRECTORY
                     + File.separator + fileName+ "!");
         }
         catch (FileNotFoundException e) {

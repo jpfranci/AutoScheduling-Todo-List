@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class PriorityTodoListEntryTest extends TodoListEntryTest {
+    PriorityTodoListEntry entry;
 
     @Override
     @Test
@@ -73,6 +74,24 @@ public class PriorityTodoListEntryTest extends TodoListEntryTest {
                 + PriorityTodoListEntry.HIGH_STRING+ ", 3.0, 2018-12-30"));
     }
 
+    @Override
+    @Test
+    public void modifyEntryValid() {
+        entry = new PriorityTodoListEntry("Basketball", "hIgh", 3, "2018-12-30");
+        String entryToModify = "Basketla, low, 3";
+        String date = "2018-10-01";
+        assertTrue(entry.modifyEntry(entryToModify, date));
+    }
+
+    @Override
+    @Test
+    public void modifyEntryInvalid() {
+        entry = new PriorityTodoListEntry("Basketball", "hIgh", 3, "2018-12-30");
+        String entryToModify = "Basketla,low, 3";
+        String date = "2018-10-01";
+        assertFalse(entry.modifyEntry(entryToModify, date));
+    }
+
     @Test
     public void caseInsensitiveProperTodoInfo() {
         entry = new PriorityTodoListEntry("Basketball", "hIgh", 3, "2018-12-30");
@@ -94,8 +113,9 @@ public class PriorityTodoListEntryTest extends TodoListEntryTest {
 
     @Test
     public void testConstructTodoListWithNullDate() {
-        entry = new PriorityTodoListEntry("Basketball", PriorityTodoListEntry.HIGH_STRING, 3, null);
+        entry = new PriorityTodoListEntry("Basketball", PriorityTodoListEntry.HIGH_STRING, 3, "2018-30-211");
         assertTrue(entry.getTodoInfo().equals("Basketball, " + PriorityTodoListEntry.HIGH_STRING + ", 3.0, "
                 + LocalDate.now().plusDays(PriorityTodoListEntry.DEFAULT_DUE_DATE)));
     }
+
 }

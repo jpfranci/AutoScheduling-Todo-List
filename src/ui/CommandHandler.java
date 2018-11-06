@@ -3,19 +3,21 @@ package ui;
 import Model.*;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class CommandHandler {
-    public static final int PRINT_OUT_LIST = 3;
     public static final int QUIT = 0;
     public static final int ADD_ENTRY = 1;
     public static final int REMOVE_ENTRY = 2;
+    public static final int PRINT_OUT_LIST = 3;
+    public static final int MODIFY_ENTRY  = 4;
     public static final String IO_FILE = "todolist.ser";
     public static final String EMPTY_DATE = "";
 
-    TodoListFile todoListFile = new TodoListFile();
-    UserInput userInput = new UserInput();
-    ListPrinter listPrinter = new ListPrinter();
-    TodoList todoList;
+    private TodoListFile todoListFile = new TodoListFile();
+    private UserInput userInput = new UserInput();
+    private ListPrinter listPrinter = new ListPrinter();
+    private TodoList todoList;
 
     public CommandHandler() {
         todoList = new TodoList();
@@ -54,7 +56,7 @@ public class CommandHandler {
         }
 
         do {
-            choice = userInput.promptUserForChoice();
+            choice = userInput.promptUserForChoiceOfAction();
 
             switch (choice) {
                 case ADD_ENTRY:
@@ -67,37 +69,34 @@ public class CommandHandler {
                     break;
 
                 case PRINT_OUT_LIST:
-                    if (todoList.getTodoArray().size() > 0) {
-                        listPrinter.printEveryEntry(todoList.getTodoArray());
-                    }
+                    printTodoArrayIfPossible();
+                    break;
 
-                    else {
-                        System.out.println("TodoList is empty! Cannot print out anything");
-                    }
+                case MODIFY_ENTRY:
+                    modifyEntry();
                     break;
             }
 
         } while(choice != QUIT);
     }
 
-    private void removeEntryIfPossible() {
-        if (todoList.getTodoArray().size() == 0) {
-            System.out.println("Your lists are empty! Returning to choice menu!");
-        }
-        else {
-            listPrinter.printEveryEntry(todoList.getTodoArray());
-            if (todoList.removeTodoListEntry(userInput.getUserEntryToRemove())) {
-                System.out.println("Successfully removed entry!");
-            }
+    private void printTodoArrayIfPossible() {
+        if (todoList.getTodoArray().size() > 0) {
+            listPrinter.printEveryTodoArrayEntry(todoList.getTodoArray());
+        } else {
+            System.out.println("TodoList is empty! Cannot print out anything");
         }
     }
 
-    // EFFECTS: Prompts user if they want to save TodoList or quit without saving and saves
-    // TodoList into file
-    private void tryToSave() {
-        String todoListNameForIO = userInput.promptUserToSave();
-        if (todoListNameForIO != null) {
-            todoListFile.save(todoListNameForIO);
+    private void removeEntryIfPossible() {
+        if (todoList.getTodoArray().size() == 0) {
+            System.out.println("Your lists are empty! Returning to choice menu!");
+        } else {
+            listPrinter.printEveryTodoArrayEntry(todoList.getTodoArray());
+
+            if (todoList.removeTodoListEntry(userInput.getUserEntryToRemove())) {
+                System.out.println("Successfully removed entry!");
+            }
         }
     }
 
@@ -110,36 +109,76 @@ public class CommandHandler {
         int size = todoList.getTodoArray().size();
 
         if (choice == UserInput.LEISURE_ENTRY) {
-            do {
-                userEntry = userInput.getLeisureUserEntryToAdd();
-            } while (!todoList.tryToAddTodoListEntry(userEntry, CommandHandler.EMPTY_DATE));
-        }
+            userEntry = userInput.getLeisureUserEntryToAdd();
 
-        else {
-            do {
+             while (!todoList.tryToAddTodoListEntry(userEntry, CommandHandler.EMPTY_DATE)) {
+                 System.out.println("Invalid entry! Please try again!\n Note: " +
+                         "that entries must have unique names");
+                 userEntry = userInput.getLeisureUserEntryToAdd();
+             }
+        } else {
+                userEntry = userInput.getPriorityUserEntryToAdd();
+                date = userInput.getUserEntryForDate();
+
+            while (!todoList.tryToAddTodoListEntry(userEntry, date)) {
+                System.out.println("Invalid entry! Please try again!\n Note: " +
+                        "that entries must have unique names");
                 userEntry = userInput.getPriorityUserEntryToAdd();
                 date = userInput.getUserEntryForDate();
             }
-            while (!todoList.tryToAddTodoListEntry(userEntry, date));
         }
-
-        TodoListEntry entryAdded = todoList.getTodoArray().get(size);
-        if (entryAdded instanceof PriorityTodoListEntry) {
-            PriorityTodoListEntry priorityTodoListEntry = (PriorityTodoListEntry) entryAdded;
-
-            System.out.println("Successfully added:\n" + priorityTodoListEntry.getActivity() +
-                    ", priority level " + priorityTodoListEntry.getPriorityLevel() +
-                    ", which will take " + priorityTodoListEntry.getTime() + " hrs to complete " +
-                    "and is due on " + "" + priorityTodoListEntry.getDueDate() + "!");
-        }
-
-        else if (entryAdded instanceof LeisureTodoListEntry) {
-            LeisureTodoListEntry leisureTodoListEntry = (LeisureTodoListEntry) entryAdded;
-
-            System.out.println("Successfully added:\n" + leisureTodoListEntry.getActivity() +
-                    ", which will take " + leisureTodoListEntry.getTime() + " hrs to complete" + "!");
-        }
-
+        printSuccessMessage(size);
     }
 
+    private void printSuccessMessage(int index) {
+        TodoListEntry entryAdded = todoList.getTodoArray().get(index);
+        System.out.println("Successfully added:\n" +entryAdded.getTodoInfoFormat());
+    }
+
+
+    // EFFECTS: Prompts user for TodoListEntry to modify and modifies the entry chosen
+    private void modifyEntry() {
+        Map<String, TodoListEntry> todoListEntryHashMap = todoList.getTodoListMap();
+
+        if (!todoListEntryHashMap.isEmpty()) {
+            TodoListEntry entryToModify = todoListEntryHashMap.
+                    get(userInput.getEntryToModify(todoListEntryHashMap));
+
+            if (entryToModify instanceof PriorityTodoListEntry) {
+                modifyPriorityTodoListEntry((PriorityTodoListEntry) entryToModify);
+            } else {
+                modifyLeisureTodoListEntry((LeisureTodoListEntry) entryToModify);
+            }
+
+        } else {
+            System.out.println("No entries to modify!");
+        }
+    }
+
+    private void modifyLeisureTodoListEntry(LeisureTodoListEntry entryToModify) {
+        String revisedEntry;
+
+        do {
+            revisedEntry = userInput.getLeisureUserEntryToAdd();
+        } while(!entryToModify.modifyEntry(revisedEntry));
+    }
+
+    private void modifyPriorityTodoListEntry(PriorityTodoListEntry entryToModify) {
+        String revisedEntry;
+        String date;
+
+        do {
+            revisedEntry = userInput.getPriorityUserEntryToAdd();
+            date = userInput.getUserEntryForDate();
+        } while(!entryToModify.modifyEntry(revisedEntry, date));
+    }
+
+    // EFFECTS: Prompts user if they want to save TodoList or quit without saving and saves
+    // TodoList into file
+    private void tryToSave() {
+        String todoListNameForIO = userInput.promptUserToSave();
+        if (todoListNameForIO != null) {
+            todoListFile.save(todoListNameForIO);
+        }
+    }
 }

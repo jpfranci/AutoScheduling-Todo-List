@@ -1,5 +1,7 @@
 package Model;
 
+import exceptions.InvalidInputException;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
@@ -17,19 +19,24 @@ public class PriorityTodoListEntry extends TodoListEntry {
     private int priority;
     private LocalDate dueDate;
 
-
     // REQUIRES: priority to be one of low, medium, high
     // MODIFIES: this
     // EFFECTS: Constructs a PriorityTodoListEntry using activity, priority, and time information
     // called to constructor
-    // if date is null then sets dueDate as week after today otherwise sets as date
+    // if date is not valid then sets dueDate as week after today otherwise sets as date
     public PriorityTodoListEntry(String activity, String priority, double time, String date) {
         super(activity, time);
         this.priority = priorityStringToInt(priority);
+        setDueDate(date);
+    }
+
+    // MODIFIES: this
+    // EFFECTS: Tries to modify dueDate by parsing date, if a parse exception is thrown then catches
+    // it and sets dueDate to 7 days from the current date
+    private void setDueDate(String date) {
         try {
             dueDate = LocalDate.parse(date);
-        }
-        catch(DateTimeParseException e) {
+        } catch(DateTimeParseException e) {
             System.out.println("\nError: Date entered was invalid, setting dueDate for a week from now!");
             dueDate = LocalDate.now().plusDays(DEFAULT_DUE_DATE);
         }
@@ -38,11 +45,9 @@ public class PriorityTodoListEntry extends TodoListEntry {
     private int priorityStringToInt(String priority) {
         if (priority.equalsIgnoreCase("high")) {
             return HIGH;
-        }
-        else if (priority.equalsIgnoreCase("medium")) {
+        } else if (priority.equalsIgnoreCase("medium")) {
             return MEDIUM;
-        }
-        else {
+        } else {
             return LOW;
         }
     }
@@ -51,9 +56,15 @@ public class PriorityTodoListEntry extends TodoListEntry {
     // EFFECTS: Returns contents of PriorityTodoListEntry in form of Activity,
     // priorityLevel(low, medium, high), time(in hrs), due date(yyyy-mm-dd)
     public String getTodoInfo() {
-        return activity+ ", " +this.getPriorityLevel()+ ", " +time+ ", " +dueDate;
+        return activity+ ", " +getPriorityLevel()+ ", " +time+ ", " +dueDate;
     }
 
+    @Override
+    // EFFECTS: Returns formatted contents of PriorityTodoListEntry with units contained
+    public String getTodoInfoFormat() {
+        return activity + " which is " +getPriorityLevel() + " priority and will take "
+                +time + " hours and is due on " + dueDate;
+    }
 
     // EFFECTS: Return integer representation of priority
     public int getPriority() {
@@ -79,24 +90,18 @@ public class PriorityTodoListEntry extends TodoListEntry {
     }
 
     @Override
-    // EFFECTS: checks if object is a PriorityTodoListEntry and if it is equal to this
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PriorityTodoListEntry)) return false;
+        if (!super.equals(o)) return false;
+        PriorityTodoListEntry that = (PriorityTodoListEntry) o;
+        return priority == that.priority &&
+                Objects.equals(dueDate, that.dueDate);
+    }
 
-        if (obj == this) {
-            return true;
-        }
-
-        if (obj.getClass() == getClass()) {
-            PriorityTodoListEntry entry = (PriorityTodoListEntry) obj;
-            return activity.equals(entry.getActivity())
-                    && priority == entry.getPriority()
-                    && time == entry.getTime()
-                    && dueDate.equals(entry.getDueDate());
-        }
-        return false;
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), priority, dueDate);
     }
 
     @Override
@@ -109,30 +114,39 @@ public class PriorityTodoListEntry extends TodoListEntry {
         }
         else if (o instanceof PriorityTodoListEntry) {
             PriorityTodoListEntry entry = (PriorityTodoListEntry) o;
-
             int comparePriority = Integer.compare(priority, entry.getPriority());
 
             if (comparePriority != 0) {
                 return comparePriority;
             }
-
             else {
                 int compareDate = dueDate.compareTo(entry.getDueDate());
                 if (compareDate != 0) {
                     return compareDate;
                 }
-
                 else {
                     return Double.compare(o.getTime(), time);
                 }
             }
-
         }
         return 0;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(priority, dueDate);
+    // MODIFIES: this
+    // EFFECTS: Takes a string signifying the user's modified entry and then
+    // parses it and modifies it to this, returns true if successful
+    // returns false if InvalidInputException is caught
+    public boolean modifyEntry(String modifiedEntry, String date) {
+        try {
+            String[] parsedEntry = extractActivity(modifiedEntry);
+            priority = priorityStringToInt(parsedEntry[1]);
+            time = Double.parseDouble(parsedEntry[2]);
+            setDueDate(date);
+            addToTodoListMapIfNeeded();
+        } catch (InvalidInputException e) {
+            System.out.println("Invalid input!");
+            return false;
+        }
+        return true;
     }
 }

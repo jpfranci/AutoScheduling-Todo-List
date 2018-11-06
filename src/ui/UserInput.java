@@ -1,10 +1,9 @@
 package ui;
 
+import Model.TodoListEntry;
 import Model.TodoListFile;
 
-import java.util.ArrayList;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
 
 public class UserInput {
     private static final int LOAD_LIST_OR_SAVE = 1;
@@ -22,6 +21,20 @@ public class UserInput {
 
     public void setListPrinter(ListPrinter listPrinter) {
         this.listPrinter = listPrinter;
+    }
+
+    // EFFECTS: Takes Map containing string keys to TodoListEntries and prompts user to
+    // return the string key for the TodoListEntry to modify
+    public String getEntryToModify(Map<String, TodoListEntry> todoListEntryHashMap) {
+        String entry;
+        do {
+            listPrinter.printMap(todoListEntryHashMap);
+            System.out.println("Please enter a valid activity to modify");
+            entry = scanString();
+        }
+        while(!todoListEntryHashMap.containsKey(entry));
+
+        return entry;
     }
 
     // EFFECTS: Tries to find any TodoList files, if found then prints out files and prompts user
@@ -134,17 +147,21 @@ public class UserInput {
 
     // EFFECTS: Prompts user to choose between adding entry, removing entry, and quitting entry and returns
     // the user's choice
-    public int promptUserForChoice() {
-        int choice;
+    public int promptUserForChoiceOfAction() {
+        int choiceInt;
 
-        System.out.println("\nPlease enter the number that you would like to do next\n[" + CommandHandler.ADD_ENTRY+ "] add entry \n[" +
-                CommandHandler.REMOVE_ENTRY+ "] remove an entry \n[" + CommandHandler.PRINT_OUT_LIST+ "] print " + "out your list " +
-                "\n[" + CommandHandler.QUIT+ "] quit");
         do {
-            choice = scanInt();
-        } while(choice < CommandHandler.QUIT || choice > CommandHandler.PRINT_OUT_LIST); // checks for valid input
+            System.out.println("\nPlease enter the number that you would like to do next\n["
+                    + CommandHandler.ADD_ENTRY+ "] add entry \n[" +
+                    CommandHandler.REMOVE_ENTRY+ "] remove an entry \n["
+                    + CommandHandler.PRINT_OUT_LIST+ "] print " + "out your list \n" +
+                    "[" + CommandHandler.MODIFY_ENTRY+ "] modify an entry" +
+                    "\n[" + CommandHandler.QUIT+ "] quit\n");
+            choiceInt = scanInt();
+        } while(choiceInt < CommandHandler.QUIT ||
+                choiceInt > CommandHandler.MODIFY_ENTRY); // checks for valid input
 
-        return choice;
+        return choiceInt;
     }
 
     // EFFECTS: Prompts user for entry to add to list and returns the string that the user entered
@@ -175,7 +192,6 @@ public class UserInput {
     // EFFECTS: Prompts user for entry to remove from list and returns the number that user entered
     public int getUserEntryToRemove() {
         System.out.println("\nPlease enter the number of the entry you would like to remove");
-
         return scanInt();
     }
 
@@ -197,5 +213,4 @@ public class UserInput {
     private String scanString() {
         return scanner.nextLine();
     }
-
 }

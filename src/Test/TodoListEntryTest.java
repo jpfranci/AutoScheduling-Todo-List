@@ -1,11 +1,8 @@
 package Test;
 
-import Model.TodoListEntry;
 import org.junit.jupiter.api.Test;
 
 public abstract class TodoListEntryTest {
-    TodoListEntry entry;
-
     @Test
     public abstract void twoTodoListEntriesAreSame();
 
@@ -23,4 +20,10 @@ public abstract class TodoListEntryTest {
 
     @Test
     public abstract void rightCaseProperTodoInfo();
+
+    @Test
+    public abstract void modifyEntryValid();
+
+    @Test
+    public abstract void modifyEntryInvalid();
 }

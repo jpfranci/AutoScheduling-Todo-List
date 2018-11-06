@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import Model.LeisureTodoListEntry;
+import Model.TodoListEntry;
 import org.junit.jupiter.api.Test;
 
 public class LeisureTodoListEntryTest extends TodoListEntryTest{
+    LeisureTodoListEntry entry;
 
     @Override
     @Test
@@ -54,5 +56,21 @@ public class LeisureTodoListEntryTest extends TodoListEntryTest{
     public void rightCaseProperTodoInfo() {
         entry = new LeisureTodoListEntry("Basketball", 4);
         assertTrue(entry.getTodoInfo().equals("Basketball, 4.0"));
+    }
+
+    @Override
+    @Test
+    public void modifyEntryValid() {
+        entry = new LeisureTodoListEntry("Basketball", 4);
+        String s = "Basketball, 3.0";
+        assertTrue(entry.modifyEntry(s));
+    }
+
+    @Override
+    @Test
+    public void modifyEntryInvalid() {
+        entry = new LeisureTodoListEntry("Basketball", 4);
+        String s = "Basketball,3.0";
+        assertFalse(entry.modifyEntry(s));
     }
 }

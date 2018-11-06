@@ -2,34 +2,37 @@ package Model;
 
 import exceptions.InvalidInputException;
 
-public class InputChecker {
+import java.io.Serializable;
+
+public class InputChecker implements Serializable{
+    private static final int LENGTH_FIELDS_LEISURE_ENTRY = 2;
+
     // REQUIRES: Valid string that follows format of: Activity, Priority(low, medium, high), time(number in hrs)
-    // MODIFIES: this
     // EFFECTS: Splits string into Activity, priority, and time and generates a todoListEntry
     // checks if date is valid and if it is not then sets todoListEntry due date as one week from today's date
     // and if valid then sets due date as that date
-    TodoListEntry parseTodoListEntry(String userEntry, String date) {
-        String userEntries[] = userEntry.split(", ");
+    public TodoListEntry parseTodoListEntry(String userEntry, String date) {
+        String userEntries[] = parseUserEntryString(userEntry);
 
-        if (userEntries.length == 2) {
+        if (userEntries.length == LENGTH_FIELDS_LEISURE_ENTRY) {
             return leisureTodoListEntryParse(userEntries);
-        }
-
-        else {
+        } else {
             return priorityTodoListEntryParse(date, userEntries);
         }
     }
 
-    TodoListEntry leisureTodoListEntryParse(String[] userEntries) {
-        double time = Double.parseDouble(userEntries[1]);
+    // EFFECTS: Parses userEntry string separating by " ,"
+    public String[] parseUserEntryString(String userEntry) {
+        return userEntry.split(", ");
+    }
 
+    private TodoListEntry leisureTodoListEntryParse(String[] userEntries) {
+        double time = Double.parseDouble(userEntries[1]);
         return new LeisureTodoListEntry(userEntries[0], time);
     }
 
-    TodoListEntry priorityTodoListEntryParse(String date, String[] userEntries) {
-        PriorityTodoListEntry priorityTodoListEntry;
+    private TodoListEntry priorityTodoListEntryParse(String date, String[] userEntries) {
         double time = Double.parseDouble(userEntries[2]);
-
         return new PriorityTodoListEntry(userEntries[0], userEntries[1], time, date);
     }
 
