@@ -9,8 +9,8 @@ import ui.CommandHandler;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TodoListFileTest {
-    TodoList todo;
-    TodoListFile todoListFile;
+    private TodoList todo;
+    private TodoListFile todoListFile;
     private String date = "2018-12-30";
 
     @BeforeEach

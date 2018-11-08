@@ -146,7 +146,7 @@ public class TodoListTest {
         testEntry = new PriorityTodoListEntry(activity, priority, time, date);
         todo.tryToAddTodoListEntry(entry, date);
         assertTrue(testEntry.getTodoInfo().equals(todoArray.get(index).getTodoInfo()));
-        assertTrue(todo.getTodoListMap().containsKey(activity));
+        assertTrue(todo.getTodoListMap().containsKey(new TodoListEntryActivity(activity, testEntry)));
         assertTrue(todoArray.get(index).getTodoList().equals(todo));
     }
 

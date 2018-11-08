@@ -1,10 +1,12 @@
 package Model;
 
+import com.fasterxml.jackson.annotation.*;
 import exceptions.InvalidInputException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
+
 
 public class PriorityTodoListEntry extends TodoListEntry {
     private static final int HIGH = 1;
@@ -15,21 +17,72 @@ public class PriorityTodoListEntry extends TodoListEntry {
     public static final String HIGH_STRING = "High";
     private static final String MEDIUM_STRING = "Medium";
     private static final String LOW_STRING = "Low";
-
+    @JsonIgnore
     private int priority;
+    @JsonIgnore
     private LocalDate dueDate;
+    @JsonProperty("dueDate")
+    private String dueDateString;
 
     // REQUIRES: priority to be one of low, medium, high
     // MODIFIES: this
-    // EFFECTS: Constructs a PriorityTodoListEntry using activity, priority, and time information
+    // EFFECTS: Constructs a PriorityTodoListEntry using todoListEntryActivity, priority, and time information
     // called to constructor
     // if date is not valid then sets dueDate as week after today otherwise sets as date
     public PriorityTodoListEntry(String activity, String priority, double time, String date) {
         super(activity, time);
         this.priority = priorityStringToInt(priority);
         setDueDate(date);
+        dueDateString = date;
     }
 
+    @JsonCreator
+    // MODIFIES: this
+    // EFFECTS: Constructs a PriorityTodoListEntry using the natural integer representation of priority,
+    // the string representation of todoListEntryActivity, and time information
+    // if date is not valid then sets dueDate as week after today otherwise sets as date
+    public PriorityTodoListEntry(@JsonProperty("activity") String activity, @JsonProperty("priority")
+            int priority, @JsonProperty("time") double time, @JsonProperty("dueDate")String date) {
+        super(activity, time);
+        this.priority = priority;
+        dueDateString = date;
+        setDueDate(date);
+    }
+
+    @Override
+    @JsonIgnore
+    // EFFECTS: Returns formatted contents of PriorityTodoListEntry with units contained
+    public String getTodoInfoFormat() {
+        return todoListEntryActivity.getActivity() + " which is " +getPriorityLevel() + " priority and will take "
+                +time + " hours and is due on " + dueDate;
+    }
+
+    // EFFECTS: Return integer representation of priority
+    private int getPriority() {
+        return priority;
+    }
+
+    @JsonIgnore
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    @JsonIgnore
+    // REQUIRES: priority level from LOW-HIGH
+    // EFFECTS: Takes an integer representation of priority and returns its string equivalent
+    private String getPriorityLevel() {
+        switch (priority) {
+            case HIGH:
+                return HIGH_STRING;
+            case MEDIUM:
+                return MEDIUM_STRING;
+            case LOW:
+                return LOW_STRING;
+        }
+        return LOW_STRING;
+    }
+
+    @JsonIgnore
     // MODIFIES: this
     // EFFECTS: Tries to modify dueDate by parsing date, if a parse exception is thrown then catches
     // it and sets dueDate to 7 days from the current date
@@ -53,41 +106,13 @@ public class PriorityTodoListEntry extends TodoListEntry {
     }
 
     @Override
+    @JsonIgnore
     // EFFECTS: Returns contents of PriorityTodoListEntry in form of Activity,
     // priorityLevel(low, medium, high), time(in hrs), due date(yyyy-mm-dd)
     public String getTodoInfo() {
-        return activity+ ", " +getPriorityLevel()+ ", " +time+ ", " +dueDate;
+        return todoListEntryActivity.getActivity()+ ", " +getPriorityLevel()+ ", " +time+ ", " +dueDate;
     }
 
-    @Override
-    // EFFECTS: Returns formatted contents of PriorityTodoListEntry with units contained
-    public String getTodoInfoFormat() {
-        return activity + " which is " +getPriorityLevel() + " priority and will take "
-                +time + " hours and is due on " + dueDate;
-    }
-
-    // EFFECTS: Return integer representation of priority
-    public int getPriority() {
-        return priority;
-    }
-
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
-
-    // REQUIRES: priority level from LOW-HIGH
-    // EFFECTS: Takes an integer representation of priority and returns its string equivalent
-    public String getPriorityLevel() {
-        switch (priority) {
-            case HIGH:
-                return HIGH_STRING;
-            case MEDIUM:
-                return MEDIUM_STRING;
-            case LOW:
-                return LOW_STRING;
-        }
-        return LOW_STRING;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -125,7 +150,7 @@ public class PriorityTodoListEntry extends TodoListEntry {
                     return compareDate;
                 }
                 else {
-                    return Double.compare(o.getTime(), time);
+                    return compareTodoListEntryTimeActivity(o);
                 }
             }
         }
@@ -138,11 +163,10 @@ public class PriorityTodoListEntry extends TodoListEntry {
     // returns false if InvalidInputException is caught
     public boolean modifyEntry(String modifiedEntry, String date) {
         try {
-            String[] parsedEntry = extractActivity(modifiedEntry);
+            String[] parsedEntry = extractActivityAndParseEntry(modifiedEntry);
             priority = priorityStringToInt(parsedEntry[1]);
             time = Double.parseDouble(parsedEntry[2]);
             setDueDate(date);
-            addToTodoListMapIfNeeded();
         } catch (InvalidInputException e) {
             System.out.println("Invalid input!");
             return false;

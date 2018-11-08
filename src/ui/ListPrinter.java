@@ -1,5 +1,6 @@
 package ui;
 
+import Model.TodoListEntryActivity;
 import Model.TodoListEntry;
 
 import java.util.ArrayList;
@@ -14,10 +15,10 @@ public class ListPrinter {
         }
     }
 
-    public void printMap(Map<String, TodoListEntry> todoListEntryHashMap) {
+    public void printMap(Map<TodoListEntryActivity, TodoListEntry> todoListEntryHashMap) {
         System.out.println("Your list of activities to do are:");
-        for(String activity : todoListEntryHashMap.keySet()) {
-            System.out.println(activity);
+        for(TodoListEntryActivity activity : todoListEntryHashMap.keySet()) {
+            System.out.println(activity.getActivity());
         }
 
     }

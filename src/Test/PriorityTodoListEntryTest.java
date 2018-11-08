@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class PriorityTodoListEntryTest extends TodoListEntryTest {
-    PriorityTodoListEntry entry;
+    private PriorityTodoListEntry entry;
 
     @Override
     @Test

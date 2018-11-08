@@ -4,11 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import Model.LeisureTodoListEntry;
-import Model.TodoListEntry;
 import org.junit.jupiter.api.Test;
 
 public class LeisureTodoListEntryTest extends TodoListEntryTest{
-    LeisureTodoListEntry entry;
+    private LeisureTodoListEntry entry;
 
     @Override
     @Test

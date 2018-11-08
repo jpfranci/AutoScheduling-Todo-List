@@ -7,8 +7,16 @@ import java.util.*;
 
 public class TodoList implements Serializable {
     private ArrayList<TodoListEntry> todoArray = new ArrayList<>();
-    private Map<String, TodoListEntry> todoListMap = new HashMap<>();
+    private Map<TodoListEntryActivity, TodoListEntry> todoListMap = new TreeMap<>();
     private InputChecker inputChecker = new InputChecker();
+
+    // MODIFIES: this
+    // EFFECTS: Initializes todoListMap based on the values of todoListEntries
+    public void initializeMap(ArrayList<TodoListEntry> todoListEntries) {
+        for (TodoListEntry entry : todoListEntries) {
+            todoListMap.put(entry.todoListEntryActivity, entry);
+        }
+    }
 
     // MODIFIES: this
     // EFFECTS: Returns true if String matches format required and adds PriorityTodoListEntry represented by
@@ -17,9 +25,10 @@ public class TodoList implements Serializable {
        try {
            if (inputChecker.inputFollowsFormat(userEntry)) {
                TodoListEntry newEntry = inputChecker.parseTodoListEntry(userEntry, date);
-               if(!todoListMap.containsKey(newEntry.getActivity())) {
+
+               if(!isNotInMap(newEntry)) {
                    todoArray.add(newEntry);
-                   todoListMap.put(newEntry.getActivity(), newEntry);
+                   todoListMap.put(newEntry.getTodoListEntryActivity(), newEntry);
                    newEntry.setTodoList(this);
                }
                else {
@@ -28,7 +37,7 @@ public class TodoList implements Serializable {
            }
 
        } catch (InvalidInputException e) {
-           System.out.println("Invalid input for activity, priority, time: please try again!");
+           System.out.println("Invalid input for todoListEntryActivity, priority, time: please try again!");
            return false;
        } catch (NumberFormatException e) {
            System.out.println("Number entered is greater than allowed. Please try again!");
@@ -37,12 +46,16 @@ public class TodoList implements Serializable {
         return true;
     }
 
+    public boolean isNotInMap(TodoListEntry newEntry) {
+        return todoListMap.containsKey(newEntry.getTodoListEntryActivity());
+    }
+
     // MODIFIES: this
     // EFFECTS: Returns true if successfully removed entry at index, returns false otherwise
     public boolean removeTodoListEntry(int indexToRemove) {
         try {
             TodoListEntry entryToRemove = todoArray.get(indexToRemove);
-            todoListMap.remove(entryToRemove.getActivity());
+            todoListMap.remove(entryToRemove.getTodoListEntryActivity());
             entryToRemove.removeTodoList();
             todoArray.remove(indexToRemove);
         }
@@ -70,11 +83,13 @@ public class TodoList implements Serializable {
         }
     }
 
+    // MODIFIES: this
+    // EFFECTS: Sets this to todoArray
     public void setTodoArray(ArrayList<TodoListEntry> todoArray) {
         this.todoArray = todoArray;
     }
 
-    public void setTodoListMap(HashMap<String, TodoListEntry> todoListHashMap) {
+    public void setTodoListMap(Map<TodoListEntryActivity, TodoListEntry> todoListHashMap) {
         this.todoListMap = todoListHashMap;
     }
 
@@ -82,7 +97,7 @@ public class TodoList implements Serializable {
         return todoArray;
     }
 
-    public Map<String, TodoListEntry> getTodoListMap() {
+    public Map<TodoListEntryActivity, TodoListEntry> getTodoListMap() {
         return todoListMap;
     }
 

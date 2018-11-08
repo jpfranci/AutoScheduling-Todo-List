@@ -11,7 +11,7 @@ public class CommandHandler {
     public static final int REMOVE_ENTRY = 2;
     public static final int PRINT_OUT_LIST = 3;
     public static final int MODIFY_ENTRY  = 4;
-    public static final String IO_FILE = "todolist.ser";
+    public static final String IO_FILE = "todolist.json";
     public static final String EMPTY_DATE = "";
 
     private TodoListFile todoListFile = new TodoListFile();
@@ -51,7 +51,7 @@ public class CommandHandler {
     private void handleTodoListCommand() {
         int choice;
 
-        if (todoList.getTodoArray().size() == 0) {
+        if (todoList.getTodoListMap().size() == 0) {
             addTodoListEntry();
         }
 
@@ -138,11 +138,11 @@ public class CommandHandler {
 
     // EFFECTS: Prompts user for TodoListEntry to modify and modifies the entry chosen
     private void modifyEntry() {
-        Map<String, TodoListEntry> todoListEntryHashMap = todoList.getTodoListMap();
+        Map<TodoListEntryActivity, TodoListEntry> todoListEntryMap = todoList.getTodoListMap();
 
-        if (!todoListEntryHashMap.isEmpty()) {
-            TodoListEntry entryToModify = todoListEntryHashMap.
-                    get(userInput.getEntryToModify(todoListEntryHashMap));
+        if (!todoListEntryMap.isEmpty()) {
+            TodoListEntry entryToModify = todoListEntryMap.
+                    get(userInput.getEntryToModify(todoListEntryMap));
 
             if (entryToModify instanceof PriorityTodoListEntry) {
                 modifyPriorityTodoListEntry((PriorityTodoListEntry) entryToModify);
@@ -163,6 +163,8 @@ public class CommandHandler {
         } while(!entryToModify.modifyEntry(revisedEntry));
     }
 
+    // MODIFIES: entryToModify
+    // EFFECTS:
     private void modifyPriorityTodoListEntry(PriorityTodoListEntry entryToModify) {
         String revisedEntry;
         String date;

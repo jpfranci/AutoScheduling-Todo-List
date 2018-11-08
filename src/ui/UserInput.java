@@ -1,5 +1,6 @@
 package ui;
 
+import Model.TodoListEntryActivity;
 import Model.TodoListEntry;
 import Model.TodoListFile;
 
@@ -25,16 +26,19 @@ public class UserInput {
 
     // EFFECTS: Takes Map containing string keys to TodoListEntries and prompts user to
     // return the string key for the TodoListEntry to modify
-    public String getEntryToModify(Map<String, TodoListEntry> todoListEntryHashMap) {
+    public TodoListEntryActivity getEntryToModify(Map<TodoListEntryActivity, TodoListEntry> todoListEntryMap) {
         String entry;
+        TodoListEntryActivity todoListEntryActivity = new TodoListEntryActivity("", null);
+
         do {
-            listPrinter.printMap(todoListEntryHashMap);
+            listPrinter.printMap(todoListEntryMap);
             System.out.println("Please enter a valid activity to modify");
             entry = scanString();
+            todoListEntryActivity.setActivity(entry);
         }
-        while(!todoListEntryHashMap.containsKey(entry));
+        while(!todoListEntryMap.containsKey(todoListEntryActivity));
 
-        return entry;
+        return todoListEntryActivity;
     }
 
     // EFFECTS: Tries to find any TodoList files, if found then prints out files and prompts user

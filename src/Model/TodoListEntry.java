@@ -1,19 +1,33 @@
 package Model;
 
+import com.fasterxml.jackson.annotation.*;
 import exceptions.InvalidInputException;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include= JsonTypeInfo.As.PROPERTY, property="type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PriorityTodoListEntry.class, name = "priorityTodoListEntry"),
+        @JsonSubTypes.Type(value = LeisureTodoListEntry.class, name = "leisureTodoListEntry"),
+})
 public abstract class TodoListEntry implements Comparable<TodoListEntry>, Serializable {
-    String activity;
+    @JsonIgnore
+    TodoListEntryActivity  todoListEntryActivity;
+    @JsonIgnore
+    private TodoList todoList;
+    @JsonIgnore
+    private InputChecker inputChecker;
+    @JsonProperty ("time")
     double time;
-    TodoList todoList;
-    private InputChecker inputChecker = new InputChecker();
+    @JsonProperty("activity")
+    private String activity;
 
     public TodoListEntry(String activity, double time) {
-        this.activity = activity;
+        this.todoListEntryActivity = new TodoListEntryActivity(activity, this);
         this.time = time;
+        inputChecker = new InputChecker();
+        this.activity = activity;
     }
 
     // EFFECTS: Returns the contents of TodoListEntry in form of a formatted string
@@ -22,18 +36,8 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry>, Serial
     // EFFECTS: Returns formatted contents of PriorityTodoListEntry with units contained
     public abstract String getTodoInfoFormat();
 
-    // EFFECTS: Returns the activity
-    public String getActivity() {
-        return activity;
-    }
-
-    // EFFECTS: Returns time needed for activity
-    public double getTime() {
-        return time;
-    }
-
-    public void setTime(double time) {
-        this.time = time;
+    public TodoListEntryActivity getTodoListEntryActivity() {
+        return todoListEntryActivity;
     }
 
     @Override
@@ -42,40 +46,45 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry>, Serial
         if (!(o instanceof TodoListEntry)) return false;
         TodoListEntry that = (TodoListEntry) o;
         return Double.compare(that.time, time) == 0 &&
-                Objects.equals(activity, that.activity);
+                todoListEntryActivity.equals(that.todoListEntryActivity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(activity, time);
-    }
-
-    protected String[] extractActivity(String modifiedEntry) throws InvalidInputException {
-        inputChecker.inputFollowsFormat(modifiedEntry);
-        String[] parsedEntry = inputChecker.parseUserEntryString(modifiedEntry);
-        modifyTodoListMapIfNeeded();
-
-        activity = parsedEntry[0];
-        return parsedEntry;
-    }
-
-    private void modifyTodoListMapIfNeeded() {
-        if(todoList!= null)
-            todoList.getTodoListMap().remove(activity);
-    }
-
-    void addToTodoListMapIfNeeded() {
-        if (todoList != null)
-            todoList.getTodoListMap().put(activity, this);
+        return Objects.hash(todoListEntryActivity, time);
     }
 
     // MODIFIES: this
-    // EFFECTS: Adds todoList associated with this to field and updates
-    public void setTodoList(TodoList todoList) {
-        if (this.todoList == null) {
-            this.todoList = todoList;
-            todoList.addToTodoArray(this);
+    // EFFECTS: if modifiedEntry does not follow format, throws an InvalidInputException
+    // otherwise parses entry, extracts an array of strings corresponding to modifiedEntry, and sets
+    // the corresponding string to activity
+    String[] extractActivityAndParseEntry(String modifiedEntry) throws InvalidInputException {
+        inputChecker.inputFollowsFormat(modifiedEntry);
+        String[] parsedEntry = inputChecker.parseUserEntryString(modifiedEntry);
+        String newActivity = parsedEntry[0];
+
+        this.todoListEntryActivity.setActivity(newActivity);
+        activity = newActivity;
+        modifyTodoListMapIfNeeded(newActivity);
+        return parsedEntry;
+    }
+
+    private void modifyTodoListMapIfNeeded(String newActivity) {
+        if (todoList != null) {
+            todoList.getTodoListMap().remove(new TodoListEntryActivity(newActivity, null));
+            todoList.getTodoListMap().put(todoListEntryActivity, this);
         }
+    }
+
+    // EFFECTS: Returns -1 if o is less in time than this, otherwise returns alphabetical
+    // comparison of o todoListEntryActivity to this todoListEntryActivity
+    int compareTodoListEntryTimeActivity(TodoListEntry o) {
+        int compareTime = Double.compare(o.time, time);
+        if (compareTime != 0)
+            return compareTime;
+        else
+            return todoListEntryActivity.getActivity().
+                    compareTo(o.getTodoListEntryActivity().getActivity());
     }
 
     // MODIFIES: this
@@ -86,5 +95,14 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry>, Serial
 
     public TodoList getTodoList() {
         return todoList;
+    }
+
+    // MODIFIES: this
+    // EFFECTS: Adds todoList associated with this to field and updates
+    public void setTodoList(TodoList todoList) {
+        if (this.todoList == null) {
+            this.todoList = todoList;
+            todoList.addToTodoArray(this);
+        }
     }
 }
