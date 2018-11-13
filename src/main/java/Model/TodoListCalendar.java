@@ -44,7 +44,7 @@ public class TodoListCalendar extends Subject{
     private Calendar calendar;
     private ArrayList<LocalDateTime> localDateTimeStarts = new ArrayList<>();
     private ArrayList<LocalDateTime> localDateTimeEnds = new ArrayList<>();
-    public ArrayList<String> events = new ArrayList<>();
+    private ArrayList<String> events = new ArrayList<>();
 
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
@@ -130,7 +130,7 @@ public class TodoListCalendar extends Subject{
                                           TodoListEntry entry,
                                           int indexToAccess) throws IOException {
         if (toSchedule.isBefore(localDateTimeStarts.get(indexToAccess)) &&
-                trialDate.isBefore(localDateTimeEnds.get(indexToAccess))) {
+                trialDate.isBefore(localDateTimeStarts.get(indexToAccess))) {
             return scheduleEventAndAddToLists(toSchedule, entry, indexToAccess, trialDate);
         }
         return false;
@@ -187,16 +187,18 @@ public class TodoListCalendar extends Subject{
     }
 
     private void getLocalDatesOfAllEntries(List<Event> items) {
+        localDateTimeStarts.clear();
+        localDateTimeEnds.clear();
+        events.clear();
+
         for (Event event : items) {
             String summary = event.getSummary();
-            if (!events.contains(summary) || event.getRecurringEventId() != null) {
                 localDateTimeStarts.add
                         (LocalDateTime.parse(event.getStart().getDateTime()
                                 .toString().split("[.]")[0]));
                 localDateTimeEnds.add(LocalDateTime.parse(event.getEnd().getDateTime()
                         .toString().split("[.]")[0]));
                 events.add(summary);
-            }
         }
         Collections.sort(localDateTimeEnds);
         Collections.sort(localDateTimeStarts);
