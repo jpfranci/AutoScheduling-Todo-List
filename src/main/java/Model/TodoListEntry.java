@@ -86,6 +86,10 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
                     compareTo(o.getTodoListEntryActivity().getActivity());
     }
 
+    public double getTime() {
+        return time;
+    }
+
     // MODIFIES: this
     // EFFECTS: sets the associated TodoList to this to null
     public void removeTodoList() {

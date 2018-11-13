@@ -9,6 +9,7 @@ public class TodoList implements Serializable {
     private ArrayList<TodoListEntry> todoArray = new ArrayList<>();
     private Map<TodoListEntryActivity, TodoListEntry> todoListMap = new TreeMap<>();
     private InputChecker inputChecker = new InputChecker();
+    private TodoListCalendar todoListCalendar;
 
     // MODIFIES: this
     // EFFECTS: Initializes todoListMap based on the values of todoListEntries
@@ -83,6 +84,10 @@ public class TodoList implements Serializable {
         }
     }
 
+    public void scheduleEntries() {
+        todoListCalendar.tryToScheduleEntries(todoListMap);
+    }
+
     // MODIFIES: this
     // EFFECTS: Sets this to todoArray
     public void setTodoArray(ArrayList<TodoListEntry> todoArray) {
@@ -91,6 +96,10 @@ public class TodoList implements Serializable {
 
     public void setTodoListMap(Map<TodoListEntryActivity, TodoListEntry> todoListHashMap) {
         this.todoListMap = todoListHashMap;
+    }
+
+    public void setTodoListCalendar(TodoListCalendar todoListCalendar) {
+        this.todoListCalendar = todoListCalendar;
     }
 
     public ArrayList<TodoListEntry> getTodoArray() {

@@ -159,11 +159,12 @@ public class UserInput {
                     + CommandHandler.ADD_ENTRY+ "] add entry \n[" +
                     CommandHandler.REMOVE_ENTRY+ "] remove an entry \n["
                     + CommandHandler.PRINT_OUT_LIST+ "] print " + "out your list \n" +
-                    "[" + CommandHandler.MODIFY_ENTRY+ "] modify an entry" +
-                    "\n[" + CommandHandler.QUIT+ "] quit\n");
+                    "[" + CommandHandler.MODIFY_ENTRY+ "] modify an entry\n" +
+                    "[" +CommandHandler.SCHEDULE_ENTRIES+ "] schedule your TodoList to Google Calendar\n" +
+                    "[" + CommandHandler.QUIT+ "] quit\n");
             choiceInt = scanInt();
         } while(choiceInt < CommandHandler.QUIT ||
-                choiceInt > CommandHandler.MODIFY_ENTRY); // checks for valid input
+                choiceInt > CommandHandler.SCHEDULE_ENTRIES); // checks for valid input
 
         return choiceInt;
     }

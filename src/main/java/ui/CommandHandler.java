@@ -11,6 +11,7 @@ public class CommandHandler {
     public static final int REMOVE_ENTRY = 2;
     public static final int PRINT_OUT_LIST = 3;
     public static final int MODIFY_ENTRY  = 4;
+    public static final int SCHEDULE_ENTRIES = 5;
     private static final String EMPTY_DATE = "";
 
     private TodoListFile todoListFile = new TodoListFile();
@@ -19,7 +20,9 @@ public class CommandHandler {
     private TodoList todoList;
 
     public CommandHandler() {
+        TodoListCalendar todoListCalendar = new TodoListCalendar(listPrinter);
         todoList = new TodoList();
+        todoList.setTodoListCalendar(todoListCalendar);
         todoListFile.setTodoList(todoList);
         userInput.setListPrinter(listPrinter);
 
@@ -73,6 +76,10 @@ public class CommandHandler {
 
                 case MODIFY_ENTRY:
                     modifyEntry();
+                    break;
+
+                case SCHEDULE_ENTRIES:
+                    scheduleEntries();
                     break;
             }
 
@@ -172,6 +179,10 @@ public class CommandHandler {
             revisedEntry = userInput.getPriorityUserEntryToAdd();
             date = userInput.getUserEntryForDate();
         } while(!entryToModify.modifyEntry(revisedEntry, date));
+    }
+
+    private void scheduleEntries() {
+        todoList.scheduleEntries();
     }
 
     // EFFECTS: Prompts user if they want to save TodoList or quit without saving and saves
