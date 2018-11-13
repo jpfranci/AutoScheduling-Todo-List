@@ -103,15 +103,15 @@ public class TodoListCalendar extends Subject{
                         toSchedule = incrementDateIfNeeded(toSchedule, maxTimeToday, days);
 
                         try {
-                            scheduleEventAndAddToLists(toSchedule, entry, indexToAccess,
+                            isScheduled = scheduleEventAndAddToLists(toSchedule, entry, indexToAccess,
                                     toSchedule.plusMinutes(minutesToAdd));
-                            isScheduled = true;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    } else if (!isScheduled) {
+                    } else {
                         days++;
                         toSchedule = LocalDateTime.of(LocalDate.now().plusDays(days), MIN_SCHEDULE_TIME);
+                        trialDate = toSchedule.plusMinutes(minutesToAdd);
                         maxTimeToday = maxTimeToday.plusDays(1);
                     }
                 }
@@ -131,22 +131,24 @@ public class TodoListCalendar extends Subject{
                                           int indexToAccess) throws IOException {
         if (toSchedule.isBefore(localDateTimeStarts.get(indexToAccess)) &&
                 trialDate.isBefore(localDateTimeEnds.get(indexToAccess))) {
-            scheduleEventAndAddToLists(toSchedule, entry, indexToAccess, trialDate);
-            return true;
+            return scheduleEventAndAddToLists(toSchedule, entry, indexToAccess, trialDate);
         }
         return false;
     }
 
-    private void scheduleEventAndAddToLists(LocalDateTime toSchedule,
+    private boolean scheduleEventAndAddToLists(LocalDateTime toSchedule,
                                             TodoListEntry entry,
                                             int indexToAccess, LocalDateTime trialDate) throws IOException {
         scheduleEvent(toSchedule, entry, trialDate);
         localDateTimeStarts.add(indexToAccess, toSchedule);
         localDateTimeEnds.add(indexToAccess, trialDate);
         events.add(entry.getTodoListEntryActivity().getActivity());
+
+        return true;
     }
 
-    private void scheduleEvent(LocalDateTime toSchedule, TodoListEntry entry, LocalDateTime trialDate) throws IOException {
+    private void scheduleEvent(LocalDateTime toSchedule,
+                               TodoListEntry entry, LocalDateTime trialDate) throws IOException {
         Event event = new Event().setSummary(entry.getTodoListEntryActivity().getActivity());
 
         DateTime startDateTime = new DateTime(LocalDateTimeToDateTimeString(toSchedule));
@@ -187,17 +189,17 @@ public class TodoListCalendar extends Subject{
     private void getLocalDatesOfAllEntries(List<Event> items) {
         for (Event event : items) {
             String summary = event.getSummary();
-            if (!events.contains(summary)) {
+            if (!events.contains(summary) || event.getRecurringEventId() != null) {
                 localDateTimeStarts.add
                         (LocalDateTime.parse(event.getStart().getDateTime()
                                 .toString().split("[.]")[0]));
                 localDateTimeEnds.add(LocalDateTime.parse(event.getEnd().getDateTime()
                         .toString().split("[.]")[0]));
                 events.add(summary);
-                Collections.sort(localDateTimeEnds);
-                Collections.sort(localDateTimeStarts);
             }
         }
+        Collections.sort(localDateTimeEnds);
+        Collections.sort(localDateTimeStarts);
     }
 
     private long getTimeAtMidnight() {
@@ -216,7 +218,8 @@ public class TodoListCalendar extends Subject{
         DateTime timeMax = new DateTime(timeEnd);
 
         events = calendar.events().list("primary").setPageToken(pageToken)
-                .setTimeMin(timeMin).setTimeMax(timeMax).execute();
+                .setTimeMin(timeMin).setTimeMax(timeMax).setOrderBy("startTime")
+                .setSingleEvents(true).execute();
 
         return events;
     }
