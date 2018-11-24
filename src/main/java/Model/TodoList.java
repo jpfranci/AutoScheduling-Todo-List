@@ -1,7 +1,6 @@
 package Model;
 
 import exceptions.InvalidInputException;
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -31,8 +30,7 @@ public class TodoList implements Serializable {
                    todoArray.add(newEntry);
                    todoListMap.put(newEntry.getTodoListEntryActivity(), newEntry);
                    newEntry.setTodoList(this);
-               }
-               else {
+               } else {
                    return false;
                }
            }

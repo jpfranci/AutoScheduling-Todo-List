@@ -14,7 +14,7 @@ public class Subject {
         }
      }
 
-     public void notifyObserver(Calendar calendar, long timeToSet) {
+     public void notifyObservers(Calendar calendar, long timeToSet) {
         for (CalendarObserver calendarObserver : calendarObservers) {
             calendarObserver.update(calendar, timeToSet);
         }

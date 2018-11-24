@@ -46,6 +46,24 @@ public class TodoListCalendar extends Subject{
     private ArrayList<LocalDateTime> localDateTimeEnds = new ArrayList<>();
     private ArrayList<String> events = new ArrayList<>();
 
+    public TodoListCalendar(CalendarObserver calendarObserver) {
+        try {
+            System.out.println("Please enter your credentials for your google account to link to your TodoList");
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            calendar = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+
+        } catch (IOException e) {
+            System.out.println("Calendar couldn't be successfully loaded!");
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        } finally {
+            addObserver(calendarObserver);
+        }
+    }
+
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
         InputStream in = TodoListCalendar.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
@@ -61,6 +79,12 @@ public class TodoListCalendar extends Subject{
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
+    // MODIFIES: this
+    // EFFECTS: Gets user entries from Google Calendar and stores them in this. Schedules TodoListEntries from
+    // Map onto Google Calendar until specified range to set activities (by default this is a week).
+    // Makes sure that all activities scheduled are between time ranges in a day
+    // (default is between 10 am - 10 pm) and that there are no collisions between other activities when
+    // scheduled
     public void tryToScheduleEntries(Map<TodoListEntryActivity, TodoListEntry> todoListEntryMap) {
         Collection<TodoListEntry> todoListEntries = todoListEntryMap.values();
         getEntries();
@@ -71,9 +95,72 @@ public class TodoListCalendar extends Subject{
         scheduleActivities(todoListEntries, maxDateTime);
 
         if (localDateTimeStarts.size() > sizeListScheduledBefore) {
-            notifyObserver(calendar, getTimeAtMidnight());
+            notifyObservers(calendar, getTimeAtMidnight());
         }
     }
+
+    // MODIFIES: this
+    // EFFECTS: Gets all events from Google Calendar during specified time range and from all the
+    // pages of the calendar. Stores the start and end LocalDateTimes of these entries
+    // and the event name
+    private void getEntries() {
+        String pageToken = null;
+        try {
+            do {
+                Events events = null;
+                events = getEvents(pageToken);
+
+                List<Event> items = events.getItems();
+                getLocalDatesOfAllEntries(items);
+                pageToken = events.getNextPageToken();
+            } while (pageToken != null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // EFFECTS: Takes all the events from user's primary calendar from today at midnight to specified
+    // time range set by user (default one week) and orders them by startTime. Returns an events object.
+    private Events getEvents(String pageToken) throws IOException {
+        Events events;
+        long curTime = getTimeAtMidnight();
+        long timeEnd = curTime + RANGE_TO_SET_ACTIVITIES;
+
+        DateTime timeMin = new DateTime(curTime);
+        DateTime timeMax = new DateTime(timeEnd);
+
+        events = calendar.events().list("primary").setPageToken(pageToken)
+                .setTimeMin(timeMin).setTimeMax(timeMax).setOrderBy("startTime")
+                .setSingleEvents(true).execute();
+
+        return events;
+    }
+
+    // EFFECTS: Calculates the millisecond representation of
+    private long getTimeAtMidnight() {
+        LocalDate date = LocalDate.now();
+        ZoneId zoneId = ZoneId.systemDefault(); // or: ZoneId.of("Europe/Oslo");
+        long epoch = date.atStartOfDay(zoneId).toEpochSecond();
+        return epoch * 1000;
+    }
+
+    private void getLocalDatesOfAllEntries(List<Event> items) {
+        localDateTimeStarts.clear();
+        localDateTimeEnds.clear();
+        events.clear();
+
+        for (Event event : items) {
+            String summary = event.getSummary();
+            localDateTimeStarts.add
+                    (LocalDateTime.parse(event.getStart().getDateTime()
+                            .toString().split("[.]")[0]));
+            localDateTimeEnds.add(LocalDateTime.parse(event.getEnd().getDateTime()
+                    .toString().split("[.]")[0]));
+            events.add(summary);
+        }
+    }
+
+
 
     private void scheduleActivities(Collection<TodoListEntry> todoListEntries, LocalDateTime maxDateTime) {
         for (TodoListEntry entry : todoListEntries) {
@@ -170,77 +257,4 @@ public class TodoListCalendar extends Subject{
         return trialDate.toString().concat(DATE_TIME_ENDING);
     }
 
-    private void getEntries() {
-        String pageToken = null;
-        try {
-            do {
-                Events events = null;
-                events = getEvents(pageToken);
-
-                List<Event> items = events.getItems();
-                getLocalDatesOfAllEntries(items);
-                pageToken = events.getNextPageToken();
-            } while (pageToken != null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void getLocalDatesOfAllEntries(List<Event> items) {
-        localDateTimeStarts.clear();
-        localDateTimeEnds.clear();
-        events.clear();
-
-        for (Event event : items) {
-            String summary = event.getSummary();
-                localDateTimeStarts.add
-                        (LocalDateTime.parse(event.getStart().getDateTime()
-                                .toString().split("[.]")[0]));
-                localDateTimeEnds.add(LocalDateTime.parse(event.getEnd().getDateTime()
-                        .toString().split("[.]")[0]));
-                events.add(summary);
-        }
-        Collections.sort(localDateTimeEnds);
-        Collections.sort(localDateTimeStarts);
-    }
-
-    private long getTimeAtMidnight() {
-        LocalDate date = LocalDate.now();
-        ZoneId zoneId = ZoneId.systemDefault(); // or: ZoneId.of("Europe/Oslo");
-        long epoch = date.atStartOfDay(zoneId).toEpochSecond();
-        return epoch * 1000;
-    }
-
-    private Events getEvents(String pageToken) throws IOException {
-        Events events;
-        long curTime = getTimeAtMidnight();
-        long timeEnd = curTime + RANGE_TO_SET_ACTIVITIES;
-
-        DateTime timeMin = new DateTime(curTime);
-        DateTime timeMax = new DateTime(timeEnd);
-
-        events = calendar.events().list("primary").setPageToken(pageToken)
-                .setTimeMin(timeMin).setTimeMax(timeMax).setOrderBy("startTime")
-                .setSingleEvents(true).execute();
-
-        return events;
-    }
-
-    public TodoListCalendar(CalendarObserver calendarObserver) {
-        try {
-            System.out.println("Please enter your credentials for your google account to link to your TodoList");
-
-            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            calendar = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                    .setApplicationName(APPLICATION_NAME)
-                    .build();
-
-        } catch (IOException e) {
-            System.out.println("Calendar couldn't be successfully loaded!");
-        } catch (GeneralSecurityException e) {
-            e.printStackTrace();
-        } finally {
-            addObserver(calendarObserver);
-        }
-    }
 }

@@ -65,19 +65,15 @@ public class CommandHandler {
                     addTodoListEntry();
                     todoList.sortTodoArray();
                     break;
-
                 case REMOVE_ENTRY:
                     removeEntryIfPossible();
                     break;
-
                 case PRINT_OUT_LIST:
                     printTodoArrayIfPossible();
                     break;
-
                 case MODIFY_ENTRY:
                     modifyEntry();
                     break;
-
                 case SCHEDULE_ENTRIES:
                     scheduleEntries();
                     break;

@@ -10,8 +10,6 @@ import com.google.api.services.calendar.model.Events;
 import observer.CalendarObserver;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 
 public class ListPrinter implements CalendarObserver {
@@ -49,7 +47,7 @@ public class ListPrinter implements CalendarObserver {
         }
     }
 
-    private void printCalendar(Calendar calendar, long timeToSet) throws IOException {
+    public void printCalendar(Calendar calendar, long timeToSet) throws IOException {
         DateTime now = new DateTime(timeToSet);
         DateTime max = new DateTime(timeToSet + TodoListCalendar.RANGE_TO_SET_ACTIVITIES);
         Events events = calendar.events().list("primary")

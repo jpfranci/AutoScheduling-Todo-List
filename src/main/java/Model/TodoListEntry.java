@@ -21,12 +21,23 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
     double time;
     @JsonProperty("activity")
     private String activity;
+    @JsonProperty("occurrences")
+    private int occurrences;
 
     public TodoListEntry(String activity, double time) {
         this.todoListEntryActivity = new TodoListEntryActivity(activity, this);
         this.time = time;
         inputChecker = new InputChecker();
         this.activity = activity;
+        occurrences = 1;
+    }
+
+    public void setOccurences(int occurrences) {
+        this.occurrences = occurrences;
+    }
+
+    public int getOccurrences() {
+        return occurrences;
     }
 
     // EFFECTS: Returns the contents of TodoListEntry in form of a formatted string
