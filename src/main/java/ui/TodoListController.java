@@ -40,11 +40,13 @@ public class TodoListController implements CalendarObserver, Initializable{
     @FXML private TextField timeInput;
     @FXML private DatePicker dueDateInput;
     @FXML private TextField priorityInput;
+    @FXML private Button scheduleEntries;
 
     private TodoList todoList;
     private TodoListFile todoListFile = new TodoListFile();
     private ObservableList<TodoListEntry> observableTodoListEntries;
     private Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+    private Alert informationAlert = new Alert(Alert.AlertType.CONFIRMATION);
     private Alert helpAlert = new Alert(Alert.AlertType.INFORMATION);
     private Alert errorAlert = new Alert(Alert.AlertType.ERROR);
     private boolean isFirstItemAdded;
@@ -200,6 +202,7 @@ public class TodoListController implements CalendarObserver, Initializable{
             }
             todoListTable.scrollTo(observableTodoListEntries.size() - 1);
             refreshTable();
+            resetInputs();
         } catch(InvalidActivityException e) {
             showErrorAlert("Activity cannot be empty", "Please try again with an activity value");
         } catch(InvalidTimeException e) {
@@ -209,6 +212,14 @@ public class TodoListController implements CalendarObserver, Initializable{
             showErrorAlert("No duplicate activities allowed",
                     "Please try again with an entry that doesn't have the same name");
         }
+
+    }
+
+    private void resetInputs() {
+        timeInput.setText("");
+        activityInput.setText("");
+        dueDateInput.setValue(null);
+        priorityInput.setText("");
     }
 
     private void getInputs() {
@@ -318,13 +329,17 @@ public class TodoListController implements CalendarObserver, Initializable{
         LocalDate dueDateInputValue = dueDateInput.getValue();
 
         if (dueDateInputValue != null && entriesSelected.size() > 0) {
-            showConfirmationAlert("Changing Due Dates", "Are you sure you want to change "
+            boolean alertChoice = showConfirmationAlert("Changing Due Dates",
+                    "Are you sure you want to change "
                     +listToString(entriesSelected) + "\nto " + dueDateInputValue);
 
-            for (TodoListEntry todoListEntry : entriesSelected) {
-                todoListEntry.setDueDate(dueDateInputValue);
+            if(alertChoice) {
+                for (TodoListEntry todoListEntry : entriesSelected) {
+                    todoListEntry.setDueDate(dueDateInputValue);
+                }
+                refreshTable();
+                dueDateInput.setValue(null);
             }
-            refreshTable();
         }
     }
 
@@ -332,6 +347,7 @@ public class TodoListController implements CalendarObserver, Initializable{
     private void scheduleEntriesButtonClicked(ActionEvent event) {
         if (observableTodoListEntries.size() > 0) {
             todoList.scheduleEntries();
+            scheduleEntries.setText("Schedule Entries");
         } else {
             showErrorAlert("Scheduling Entries Error", "Please make sure to have at least one entry in " +
                     "the todoList before trying to schedule");
@@ -400,10 +416,10 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     @Override
-    public void update(List<Event> events) {
-        if (events.size() > 0) {
+    public void update(List<Event> addedEvents) {
+        if (addedEvents.size() > 0) {
             StringBuilder stringBuilder = new StringBuilder();
-            eventsToString(events, stringBuilder);
+            eventsToString(addedEvents, stringBuilder);
             changeConfirmationAlertHeaderText("Events scheduled are:\n" + stringBuilder.toString());
         } else {
             showInformationAlert("No entries scheduled", "Entries have all been scheduled already");
@@ -411,7 +427,7 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     private void showInformationAlert(String headerText, String contentText) {
-        showAlert(confirmationAlert, "Todo List", headerText, contentText);
+        showAlert(informationAlert, "Todo List", headerText, contentText);
     }
 
     private void eventsToString(List<Event> events, StringBuilder stringBuilder) {

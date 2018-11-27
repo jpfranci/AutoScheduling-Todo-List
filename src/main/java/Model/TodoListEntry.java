@@ -6,6 +6,7 @@ import exceptions.InvalidPriorityException;
 import javafx.beans.property.SimpleStringProperty;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include= JsonTypeInfo.As.PROPERTY, property="type")
@@ -23,15 +24,17 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
     private static final String MEDIUM_STRING = "Medium";
     private static final String LOW_STRING = "Low";
 
-    @JsonIgnore TodoListEntryActivity  todoListEntryActivity;
-    @JsonIgnore private TodoList todoList;
-    @JsonIgnore private InputChecker inputChecker;
+    @JsonProperty("dueDate") String dueDateString;
     @JsonProperty ("time") double time;
     @JsonProperty("activity") private String activity;
     @JsonProperty("occurrences") private int occurrences;
+    @JsonIgnore TodoListEntryActivity  todoListEntryActivity;
+    @JsonIgnore private TodoList todoList;
+    @JsonIgnore private InputChecker inputChecker;
     @JsonIgnore protected LocalDate dueDate;
     @JsonIgnore protected int priority;
     @JsonIgnore String priorityString;
+
 
     public TodoListEntry(String activity, double time) {
         this.todoListEntryActivity = new TodoListEntryActivity(activity, this);
@@ -45,6 +48,7 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
         return priority;
     }
 
+    @JsonIgnore
     public LocalDate getDueDate() {
         return dueDate;
     }
@@ -170,6 +174,20 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
 
     public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
+        dueDateString = dueDate.toString();
+    }
+
+    @JsonIgnore
+    // MODIFIES: this
+    // EFFECTS: Tries to modify dueDate by parsing date, if a parse exception is thrown then catches
+    // it and sets dueDate to 7 days from the current date
+    void setDueDate(String date) {
+        try {
+            dueDate = LocalDate.parse(date);
+        } catch(DateTimeParseException e) {
+            System.out.println("\nError: Date entered was invalid, setting dueDate for a week from now!");
+            dueDate = LocalDate.now().plusDays(PriorityTodoListEntry.DEFAULT_DUE_DATE);
+        }
     }
 
     public void setPriority(int priority) {

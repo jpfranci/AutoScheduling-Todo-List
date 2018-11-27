@@ -39,7 +39,7 @@ public class ListPrinter implements CalendarObserver {
     }
 
     @Override
-    public void update(List<Event> events) {
+    public void update(List<Event> addedEvents) {
 //        try {
 //            printCalendar(calendar, timeToSet);
 //        } catch (IOException e) {

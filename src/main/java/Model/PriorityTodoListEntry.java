@@ -10,10 +10,6 @@ import java.util.Objects;
 
 public class PriorityTodoListEntry extends TodoListEntry {
     public static final int DEFAULT_DUE_DATE = 7;
-
-
-    @JsonProperty("priority")
-    private int priority;
     @JsonProperty("dueDate")
     private String dueDateString;
 
@@ -67,21 +63,6 @@ public class PriorityTodoListEntry extends TodoListEntry {
     public LocalDate getDueDate() {
         return dueDate;
     }
-
-    @JsonIgnore
-    // MODIFIES: this
-    // EFFECTS: Tries to modify dueDate by parsing date, if a parse exception is thrown then catches
-    // it and sets dueDate to 7 days from the current date
-    private void setDueDate(String date) {
-        try {
-            dueDate = LocalDate.parse(date);
-        } catch(DateTimeParseException e) {
-            System.out.println("\nError: Date entered was invalid, setting dueDate for a week from now!");
-            dueDate = LocalDate.now().plusDays(DEFAULT_DUE_DATE);
-        }
-    }
-
-
 
     @Override
     @JsonIgnore

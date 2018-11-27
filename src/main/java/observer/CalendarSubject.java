@@ -15,9 +15,9 @@ public class CalendarSubject {
         }
      }
 
-     public void notifyObservers(List<Event> newlyScheduledActivities) {
+     public void notifyObservers(List<Event> addedEvents) {
         for (CalendarObserver calendarObserver : calendarObservers) {
-            calendarObserver.update(newlyScheduledActivities);
+            calendarObserver.update(addedEvents);
         }
      }
 

@@ -15,6 +15,12 @@ public class TodoListFile implements Loadable, Saveable{
     private File currentDir = new File(DIRECTORY);
     private TodoList todoList;
 
+    public TodoListFile() {
+        if(!currentDir.exists()) {
+            createDirectory();
+        }
+    }
+
     // EFFECTS: Parses directory for TodoList files (.ser) and returns a list with their file names
     public ArrayList<String> listFiles() {
         ArrayList<String> todoListFileNames = new ArrayList<>();

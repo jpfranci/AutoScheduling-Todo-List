@@ -113,7 +113,6 @@ public class TodoList implements Serializable {
         if (isNotModified(activity)) {
             throw new InvalidActivityException();
         }
-
         timeDouble = getTimeAsDouble(time);
 
         if (isNotModified(dueDate) && isNotModified(priority)) {
@@ -124,7 +123,7 @@ public class TodoList implements Serializable {
 
         todoListEntryActivity = todoListEntry.getTodoListEntryActivity();
 
-        if (todoListMap.containsKey(todoListEntryActivity)) {
+        if (isInTodoList(todoListEntryActivity.getActivity())) {
             throw new AlreadyInTodoListException();
         }
         todoArray.add(todoListEntry);
@@ -143,7 +142,7 @@ public class TodoList implements Serializable {
         return timeDouble;
     }
     private boolean isNotModified(String type) {
-        return type.equals("");
+        return type.length() == 0;
     }
 
     // MODIFIES: this

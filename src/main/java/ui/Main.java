@@ -18,7 +18,8 @@ public class Main extends Application{
         URL url = getClass().getClassLoader().getResource("TodoList.fxml");
         Parent root = FXMLLoader.load(url);
         primaryStage.setTitle("TodoList");
-        primaryStage.setScene(new Scene(root));
+        Scene scene = new Scene(root);
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 }

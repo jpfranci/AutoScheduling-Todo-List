@@ -45,8 +45,8 @@ public class TodoListCalendar extends CalendarSubject {
     private Calendar calendar;
     private ArrayList<LocalDateTime> localDateTimeStarts = new ArrayList<>();
     private ArrayList<LocalDateTime> localDateTimeEnds = new ArrayList<>();
-    private ArrayList<String> events = new ArrayList<>();
-    private List<Event> newlyScheduledEvents = new ArrayList<>();
+    private ArrayList<String> allScheduledEvents = new ArrayList<>();
+    private List<Event> addedEvents = new ArrayList<>();
 
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
@@ -75,11 +75,11 @@ public class TodoListCalendar extends CalendarSubject {
         LocalDateTime maxDateTime = LocalDateTime.of(LocalDate.now().plusDays(7), MAX_SCHEDULE_TIME);
 
         scheduleActivities(todoListEntries, maxDateTime);
-        notifyObservers(newlyScheduledEvents);
+        notifyObservers(addedEvents);
     }
 
     // MODIFIES: this
-    // EFFECTS: Gets all events from Google Calendar during specified time range and from all the
+    // EFFECTS: Gets all allScheduledEvents from Google Calendar during specified time range and from all the
     // pages of the calendar. Stores the start and end LocalDateTimes of these entries
     // and the event name
     private void getCalendarEntries() {
@@ -98,8 +98,8 @@ public class TodoListCalendar extends CalendarSubject {
         }
     }
 
-    // EFFECTS: Takes all the events from user's primary calendar from today at midnight to specified
-    // time range set by user (default one week) and orders them by startTime. Returns an events object.
+    // EFFECTS: Takes all the allScheduledEvents from user's primary calendar from today at midnight to specified
+    // time range set by user (default one week) and orders them by startTime. Returns an allScheduledEvents object.
     private Events getEvents(String pageToken) throws IOException {
         Events events;
         long curTime = getTimeAtMidnight();
@@ -126,8 +126,8 @@ public class TodoListCalendar extends CalendarSubject {
     private void getLocalDatesOfAllEntries(List<Event> items) {
         localDateTimeStarts.clear();
         localDateTimeEnds.clear();
-        events.clear();
-        newlyScheduledEvents.clear();
+        allScheduledEvents.clear();
+        addedEvents.clear();
 
         for (Event event : items) {
             String summary = event.getSummary();
@@ -136,15 +136,13 @@ public class TodoListCalendar extends CalendarSubject {
                             .toString().split("[.]")[0]));
             localDateTimeEnds.add(LocalDateTime.parse(event.getEnd().getDateTime()
                     .toString().split("[.]")[0]));
-            events.add(summary);
+            allScheduledEvents.add(summary);
         }
     }
 
-
-
     private void scheduleActivities(Collection<TodoListEntry> todoListEntries, LocalDateTime maxDateTime) {
         for (TodoListEntry entry : todoListEntries) {
-            if (!events.contains(entry.getTodoListEntryActivity().getActivity())) {
+            if (!allScheduledEvents.contains(entry.getTodoListEntryActivity().getActivity())) {
                 double timeToSchedule = entry.getTime();
                 long minutesToAdd = (long) (timeToSchedule * 60);
 
@@ -210,7 +208,7 @@ public class TodoListCalendar extends CalendarSubject {
         localDateTimeStarts.add(indexToAccess, toSchedule);
         localDateTimeEnds.add(indexToAccess, trialDate);
         String activity = entry.getTodoListEntryActivity().getActivity();
-        events.add(activity);
+        allScheduledEvents.add(activity);
 
         return true;
     }
@@ -228,7 +226,7 @@ public class TodoListCalendar extends CalendarSubject {
         event.setEnd(end);
 
         calendar.events().insert("primary", event).execute();
-        newlyScheduledEvents.add(event);
+        addedEvents.add(event);
     }
 
     private EventDateTime createNewDateTime(DateTime startDateTime) {
@@ -238,7 +236,6 @@ public class TodoListCalendar extends CalendarSubject {
     private String LocalDateTimeToDateTimeString(LocalDateTime trialDate) {
         return trialDate.toString().concat(DATE_TIME_ENDING);
     }
-
 
     public TodoListCalendar(CalendarObserver calendarObserver) {
         try {

@@ -1,5 +1,6 @@
 package Model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import exceptions.InvalidInputException;
@@ -12,6 +13,20 @@ public class LeisureTodoListEntry extends TodoListEntry {
     public LeisureTodoListEntry(@JsonProperty("activity") String activity,
                                 @JsonProperty("time") double time) {
         super(activity, time);
+    }
+
+    @JsonCreator
+    // MODIFIES: this
+    // EFFECTS: Constructs a PriorityTodoListEntry using the natural integer representation of priority,
+    // the string representation of todoListEntryActivity, and time information
+    // if date is not valid then sets dueDate as week after today otherwise sets as date
+    public LeisureTodoListEntry(@JsonProperty("activity") String activity, @JsonProperty("priority")
+            int priority, @JsonProperty("time") double time, @JsonProperty("dueDate")String date) {
+        super(activity, time);
+        this.priority = priority;
+        priorityString = getPriorityLevel();
+        dueDateString = date;
+        setDueDate(date);
     }
 
     @Override
