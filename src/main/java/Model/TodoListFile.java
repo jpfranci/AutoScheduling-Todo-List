@@ -3,6 +3,7 @@ package Model;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.*;
 import java.lang.String;
@@ -48,41 +49,62 @@ public class TodoListFile implements Loadable, Saveable{
     // EFFECTS: loads file and generates list from its contents, prints out its contents if not empty
     public void load(String fileName) {
         try {
+            loadGeneric(new File(DIRECTORY
+                    + File.separator + fileName));
+        } catch (IOException e) {
+            System.out.println("File could not be successfully loaded");
+        }
+    }
+
+
+    @Override
+    public void load(File file) throws IOException{
+        loadGeneric(file);
+    }
+
+    private void loadGeneric(File fileName) throws IOException {
             ObjectMapper objectMapper = new ObjectMapper();
             TypeReference<List<TodoListEntry>> typeReference =
                     new TypeReference<List<TodoListEntry>>() {};
-            ArrayList<TodoListEntry> todoListEntries = objectMapper.readValue(new File(DIRECTORY
-                    + File.separator + fileName), typeReference);
+            ArrayList<TodoListEntry> todoListEntries = objectMapper.readValue(fileName, typeReference);
 
             todoList.setTodoArray(todoListEntries);
             todoList.initializeMap(todoListEntries);
 
-        } catch (IOException e) {
-            System.out.println("Error: loading file! Creating new Todo-List");
-        }
     }
+
 
     @Override
     // EFFECTS: Saves state of TodoList in a file
     public void save(String fileName) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            TypeReference<ArrayList<TodoListEntry>> typeReference =
-                    new TypeReference<ArrayList<TodoListEntry>>() {};
-            String json = mapper.writerFor(typeReference).withDefaultPrettyPrinter()
-                    .writeValueAsString(todoList.getTodoArray());
-
-            FileWriter writer = new FileWriter(DIRECTORY
+            saveGeneric(DIRECTORY
                     + File.separator + fileName);
-            writer.write(json);
-            writer.close();
-
-            System.out.println("Successfully saved " +fileName+ "!");
-        } catch (FileNotFoundException e) {
+        }  catch (FileNotFoundException e) {
             System.out.println("Error: File could not be found!");
         } catch (IOException e) {
             System.out.println("Error: File could not be created or found!");
         }
+    }
+
+    private void saveGeneric(String fileName) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        TypeReference<ArrayList<TodoListEntry>> typeReference =
+                new TypeReference<ArrayList<TodoListEntry>>() {
+                };
+        String json = mapper.writerFor(typeReference).withDefaultPrettyPrinter()
+                .writeValueAsString(todoList.getTodoArray());
+
+        FileWriter writer = new FileWriter(fileName);
+        writer.write(json);
+        writer.close();
+
+        System.out.println("Successfully saved " + fileName + "!");
+    }
+
+    @Override
+    public void save(File file) throws IOException {
+        saveGeneric(file.getAbsolutePath());
     }
 
     public void setTodoList(TodoList todoList) {

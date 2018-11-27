@@ -5,7 +5,7 @@ import com.google.api.services.calendar.Calendar;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Subject {
+public class CalendarSubject {
     private List<CalendarObserver> calendarObservers = new ArrayList<>();
 
     public void addObserver(CalendarObserver calendarObserver) {

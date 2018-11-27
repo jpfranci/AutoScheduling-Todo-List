@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: linear-gradient(to right, white, #ffeec9);" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.OpeningWindowController">
+   <children>
+      <BorderPane layoutX="-3.0" layoutY="-1.0" prefHeight="400.0" prefWidth="600.0">
+         <top>
+            <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+               <children>
+                  <MenuBar prefHeight="44.0" prefWidth="600.0" style="-fx-background-color: linear-gradient(to right, #fdfbff, #ffdda7);">
+                    <menus>
+                      <Menu mnemonicParsing="false" style="-fx-font-size: 15;" text="File">
+                        <items>
+                              <MenuItem fx:id="createNewFileButton" mnemonicParsing="false" onAction="#createNewFile" text="Create a New File" />
+                              <MenuItem fx:id="loadButton" mnemonicParsing="false" onAction="#handleLoadButtonClicked" style="fx-font-size: 10;" text="Load" />
+                          <MenuItem mnemonicParsing="false" style="fx-font-size: 10;" text="Close" />
+                        </items>
+                      </Menu>
+                    </menus>
+                  </MenuBar>
+                  <StackPane prefHeight="150.0" prefWidth="200.0">
+                     <children>
+                        <Rectangle arcHeight="5.0" arcWidth="5.0" height="166.0" opacity="0.49" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" style="-fx-background-color: linear-gradient(to right, white, #ffc4cd);" width="607.0">
+                           <fill>
+                              <LinearGradient endX="1.0" endY="1.0">
+                                 <stops>
+                                    <Stop color="WHITE" />
+                                    <Stop color="WHITE" offset="0.15785177285355034" />
+                                    <Stop color="#e2b16d" offset="1.0" />
+                                 </stops>
+                              </LinearGradient>
+                           </fill>
+                        </Rectangle>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Please click the File Toolbar&#10;to load an existing TodoList file&#10;or create a new one" wrappingWidth="247.95968627929688">
+                           <font>
+                              <Font name="Gabriola" size="25.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </StackPane>
+               </children>
+            </VBox>
+         </top>
+      </BorderPane>
+   </children>
+</AnchorPane>

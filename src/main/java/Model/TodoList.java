@@ -1,6 +1,10 @@
 package Model;
 
+import exceptions.AlreadyInTodoListException;
+import exceptions.InvalidActivityException;
 import exceptions.InvalidInputException;
+import exceptions.InvalidTimeException;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -13,6 +17,7 @@ public class TodoList implements Serializable {
     // MODIFIES: this
     // EFFECTS: Initializes todoListMap based on the values of todoListEntries
     public void initializeMap(ArrayList<TodoListEntry> todoListEntries) {
+        todoListMap.clear();
         for (TodoListEntry entry : todoListEntries) {
             todoListMap.put(entry.todoListEntryActivity, entry);
         }
@@ -21,7 +26,7 @@ public class TodoList implements Serializable {
     // MODIFIES: this
     // EFFECTS: Returns true if String matches format required and adds PriorityTodoListEntry represented by
     // String into TodoList
-    public boolean tryToAddTodoListEntry(String userEntry, String date){
+    public boolean tryToAddTodoListEntry(String userEntry, String date) {
        try {
            if (inputChecker.inputFollowsFormat(userEntry)) {
                TodoListEntry newEntry = inputChecker.parseTodoListEntry(userEntry, date);
@@ -45,7 +50,7 @@ public class TodoList implements Serializable {
         return true;
     }
 
-    public boolean isNotInMap(TodoListEntry newEntry) {
+    private boolean isNotInMap(TodoListEntry newEntry) {
         return todoListMap.containsKey(newEntry.getTodoListEntryActivity());
     }
 
@@ -66,6 +71,55 @@ public class TodoList implements Serializable {
             System.out.println("Going back to choice menu!");
         }
         return true;
+    }
+
+    public void removeTodoListEntries(List<TodoListEntry> todoListEntries) {
+        ArrayList<TodoListEntry> todoListEntriesCopy = new ArrayList<>();
+        todoListEntriesCopy.addAll(todoListEntries);
+        todoArray.removeAll(todoListEntries);
+
+        List<TodoListEntryActivity> todoListEntryActivities = new ArrayList<>();
+
+        for (TodoListEntry todoListEntry : todoListEntriesCopy) {
+            todoListEntryActivities.add(todoListEntry.getTodoListEntryActivity());
+        }
+
+        todoListMap.keySet().removeAll(todoListEntryActivities);
+    }
+
+    // MODIFIES: this
+    // EFFECTS: Adds a TodoListEntry to TodoList if valid input, else throws one of the subtypes(time, alreadyInTodoList,
+    // priority) exception
+    public TodoListEntry addTodoListEntry(String activity, String dueDate, String time, String priority)
+            throws InvalidActivityException, InvalidTimeException, AlreadyInTodoListException {
+        TodoListEntry todoListEntry;
+        TodoListEntryActivity todoListEntryActivity;
+        double timeDouble;
+
+        if (activity.equals("")) {
+            throw new InvalidActivityException();
+        }
+
+        try {
+            timeDouble = Double.parseDouble(time);
+        } catch (NumberFormatException e) {
+            throw new InvalidTimeException();
+        }
+
+        if (dueDate.equals("") && priority.equals("")) {
+            todoListEntry = new LeisureTodoListEntry(activity, timeDouble);
+        } else {
+            todoListEntry = new PriorityTodoListEntry(activity, priority, timeDouble, dueDate);
+        }
+
+        todoListEntryActivity = todoListEntry.getTodoListEntryActivity();
+
+        if (todoListMap.containsKey(todoListEntryActivity)) {
+            throw new AlreadyInTodoListException();
+        }
+        todoArray.add(todoListEntry);
+        todoListMap.put(todoListEntryActivity, todoListEntry);
+        return todoListEntry;
     }
 
     // MODIFIES: this
@@ -90,6 +144,11 @@ public class TodoList implements Serializable {
     // EFFECTS: Sets this to todoArray
     public void setTodoArray(ArrayList<TodoListEntry> todoArray) {
         this.todoArray = todoArray;
+    }
+
+    public void createNewTodoList() {
+        todoArray.clear();
+        todoListMap.clear();
     }
 
     public void setTodoListMap(Map<TodoListEntryActivity, TodoListEntry> todoListHashMap) {

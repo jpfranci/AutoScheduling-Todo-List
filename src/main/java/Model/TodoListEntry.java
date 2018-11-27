@@ -2,6 +2,7 @@ package Model;
 
 import com.fasterxml.jackson.annotation.*;
 import exceptions.InvalidInputException;
+import javafx.beans.property.SimpleStringProperty;
 
 import java.util.Objects;
 
@@ -11,18 +12,12 @@ import java.util.Objects;
         @JsonSubTypes.Type(value = LeisureTodoListEntry.class, name = "leisureTodoListEntry"),
 })
 public abstract class TodoListEntry implements Comparable<TodoListEntry> {
-    @JsonIgnore
-    TodoListEntryActivity  todoListEntryActivity;
-    @JsonIgnore
-    private TodoList todoList;
-    @JsonIgnore
-    private InputChecker inputChecker;
-    @JsonProperty ("time")
-    double time;
-    @JsonProperty("activity")
-    private String activity;
-    @JsonProperty("occurrences")
-    private int occurrences;
+    @JsonIgnore TodoListEntryActivity  todoListEntryActivity;
+    @JsonIgnore private TodoList todoList;
+    @JsonIgnore private InputChecker inputChecker;
+    @JsonProperty ("time") double time;
+    @JsonProperty("activity") private String activity;
+    @JsonProperty("occurrences") private int occurrences;
 
     public TodoListEntry(String activity, double time) {
         this.todoListEntryActivity = new TodoListEntryActivity(activity, this);
@@ -30,6 +25,10 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
         inputChecker = new InputChecker();
         this.activity = activity;
         occurrences = 1;
+    }
+
+    public String getActivity() {
+        return activity;
     }
 
     public void setOccurences(int occurrences) {
@@ -48,6 +47,10 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
 
     public TodoListEntryActivity getTodoListEntryActivity() {
         return todoListEntryActivity;
+    }
+
+    public void setActivity(String activity) {
+        this.activity = activity;
     }
 
     @Override

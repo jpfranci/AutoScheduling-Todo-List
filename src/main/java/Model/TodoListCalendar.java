@@ -17,7 +17,8 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 import observer.CalendarObserver;
-import observer.Subject;
+import observer.CalendarSubject;
+import ui.Main;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +30,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 
-public class TodoListCalendar extends Subject{
+public class TodoListCalendar extends CalendarSubject {
     private static final String APPLICATION_NAME = "TodoList AutoScheduler";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -46,27 +47,9 @@ public class TodoListCalendar extends Subject{
     private ArrayList<LocalDateTime> localDateTimeEnds = new ArrayList<>();
     private ArrayList<String> events = new ArrayList<>();
 
-    public TodoListCalendar(CalendarObserver calendarObserver) {
-        try {
-            System.out.println("Please enter your credentials for your google account to link to your TodoList");
-
-            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            calendar = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                    .setApplicationName(APPLICATION_NAME)
-                    .build();
-
-        } catch (IOException e) {
-            System.out.println("Calendar couldn't be successfully loaded!");
-        } catch (GeneralSecurityException e) {
-            e.printStackTrace();
-        } finally {
-            addObserver(calendarObserver);
-        }
-    }
-
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = TodoListCalendar.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = Main.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.
@@ -257,4 +240,22 @@ public class TodoListCalendar extends Subject{
         return trialDate.toString().concat(DATE_TIME_ENDING);
     }
 
+
+    public TodoListCalendar(CalendarObserver calendarObserver) {
+        try {
+            System.out.println("Please enter your credentials for your google account to link to your TodoList");
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            calendar = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+            
+        } catch (IOException e) {
+            System.out.println("Calendar couldn't be successfully loaded!");
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        } finally {
+            addObserver(calendarObserver);
+        }
+    }
 }

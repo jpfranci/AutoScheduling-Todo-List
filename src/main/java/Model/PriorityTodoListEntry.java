@@ -2,11 +2,11 @@ package Model;
 
 import com.fasterxml.jackson.annotation.*;
 import exceptions.InvalidInputException;
+import javafx.beans.property.SimpleStringProperty;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-
 
 public class PriorityTodoListEntry extends TodoListEntry {
     private static final int HIGH = 1;
@@ -17,12 +17,14 @@ public class PriorityTodoListEntry extends TodoListEntry {
     public static final String HIGH_STRING = "High";
     private static final String MEDIUM_STRING = "Medium";
     private static final String LOW_STRING = "Low";
-    @JsonIgnore
+    @JsonProperty("priority")
     private int priority;
     @JsonIgnore
     private LocalDate dueDate;
     @JsonProperty("dueDate")
     private String dueDateString;
+    @JsonIgnore
+    private String priorityString;
 
     // REQUIRES: priority to be one of low, medium, high
     // MODIFIES: this
@@ -32,8 +34,13 @@ public class PriorityTodoListEntry extends TodoListEntry {
     public PriorityTodoListEntry(String activity, String priority, double time, String date) {
         super(activity, time);
         this.priority = priorityStringToInt(priority);
+        priorityString = getPriorityLevel();
         setDueDate(date);
         dueDateString = date;
+    }
+
+    public String getPriorityString() {
+        return priorityString;
     }
 
     @JsonCreator
@@ -45,6 +52,7 @@ public class PriorityTodoListEntry extends TodoListEntry {
             int priority, @JsonProperty("time") double time, @JsonProperty("dueDate")String date) {
         super(activity, time);
         this.priority = priority;
+        priorityString = getPriorityLevel();
         dueDateString = date;
         setDueDate(date);
     }
