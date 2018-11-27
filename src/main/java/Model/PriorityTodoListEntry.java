@@ -9,22 +9,14 @@ import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 public class PriorityTodoListEntry extends TodoListEntry {
-    private static final int HIGH = 1;
-    private static final int MEDIUM = 2;
-    private static final int LOW = 3;
     public static final int DEFAULT_DUE_DATE = 7;
 
-    public static final String HIGH_STRING = "High";
-    private static final String MEDIUM_STRING = "Medium";
-    private static final String LOW_STRING = "Low";
+
     @JsonProperty("priority")
     private int priority;
-    @JsonIgnore
-    private LocalDate dueDate;
     @JsonProperty("dueDate")
     private String dueDateString;
-    @JsonIgnore
-    private String priorityString;
+
 
     // REQUIRES: priority to be one of low, medium, high
     // MODIFIES: this
@@ -65,29 +57,15 @@ public class PriorityTodoListEntry extends TodoListEntry {
                 +time + " hours and is due on " + dueDate;
     }
 
+    @Override
     // EFFECTS: Return integer representation of priority
-    private int getPriority() {
+    public int getPriority() {
         return priority;
     }
 
     @JsonIgnore
     public LocalDate getDueDate() {
         return dueDate;
-    }
-
-    @JsonIgnore
-    // REQUIRES: priority level from LOW-HIGH
-    // EFFECTS: Takes an integer representation of priority and returns its string equivalent
-    private String getPriorityLevel() {
-        switch (priority) {
-            case HIGH:
-                return HIGH_STRING;
-            case MEDIUM:
-                return MEDIUM_STRING;
-            case LOW:
-                return LOW_STRING;
-        }
-        return LOW_STRING;
     }
 
     @JsonIgnore
@@ -103,15 +81,7 @@ public class PriorityTodoListEntry extends TodoListEntry {
         }
     }
 
-    private int priorityStringToInt(String priority) {
-        if (priority.equalsIgnoreCase("high")) {
-            return HIGH;
-        } else if (priority.equalsIgnoreCase("medium")) {
-            return MEDIUM;
-        } else {
-            return LOW;
-        }
-    }
+
 
     @Override
     @JsonIgnore

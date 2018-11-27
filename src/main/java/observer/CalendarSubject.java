@@ -1,6 +1,7 @@
 package observer;
 
 import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.Event;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +15,9 @@ public class CalendarSubject {
         }
      }
 
-     public void notifyObservers(Calendar calendar, long timeToSet) {
+     public void notifyObservers(List<Event> newlyScheduledActivities) {
         for (CalendarObserver calendarObserver : calendarObservers) {
-            calendarObserver.update(calendar, timeToSet);
+            calendarObserver.update(newlyScheduledActivities);
         }
      }
 

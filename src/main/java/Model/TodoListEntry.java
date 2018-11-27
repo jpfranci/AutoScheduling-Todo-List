@@ -2,8 +2,10 @@ package Model;
 
 import com.fasterxml.jackson.annotation.*;
 import exceptions.InvalidInputException;
+import exceptions.InvalidPriorityException;
 import javafx.beans.property.SimpleStringProperty;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include= JsonTypeInfo.As.PROPERTY, property="type")
@@ -12,12 +14,24 @@ import java.util.Objects;
         @JsonSubTypes.Type(value = LeisureTodoListEntry.class, name = "leisureTodoListEntry"),
 })
 public abstract class TodoListEntry implements Comparable<TodoListEntry> {
+    static final int HIGH = 1;
+    static final int MEDIUM = 2;
+    static final int LOW = 3;
+    static final int NOT_VALID_PRIORITY = -1;
+
+    public static final String HIGH_STRING = "High";
+    private static final String MEDIUM_STRING = "Medium";
+    private static final String LOW_STRING = "Low";
+
     @JsonIgnore TodoListEntryActivity  todoListEntryActivity;
     @JsonIgnore private TodoList todoList;
     @JsonIgnore private InputChecker inputChecker;
     @JsonProperty ("time") double time;
     @JsonProperty("activity") private String activity;
     @JsonProperty("occurrences") private int occurrences;
+    @JsonIgnore protected LocalDate dueDate;
+    @JsonIgnore protected int priority;
+    @JsonIgnore String priorityString;
 
     public TodoListEntry(String activity, double time) {
         this.todoListEntryActivity = new TodoListEntryActivity(activity, this);
@@ -27,8 +41,26 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
         occurrences = 1;
     }
 
+    public int getPriority() {
+        return priority;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
     public String getActivity() {
         return activity;
+    }
+
+    public void setPriority(String priority) throws InvalidPriorityException{
+        int priorityInt = priorityStringToInt(priority);
+        if(priorityInt != NOT_VALID_PRIORITY) {
+            setPriority(priorityInt);
+            priorityString = getPriorityLevel();
+        } else {
+            throw new InvalidPriorityException();
+        }
     }
 
     public void setOccurences(int occurrences) {
@@ -51,6 +83,7 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
 
     public void setActivity(String activity) {
         this.activity = activity;
+        todoListEntryActivity.setActivity(activity);
     }
 
     @Override
@@ -100,6 +133,48 @@ public abstract class TodoListEntry implements Comparable<TodoListEntry> {
                     compareTo(o.getTodoListEntryActivity().getActivity());
     }
 
+    protected int priorityStringToInt(String priority) {
+        if (priority.equalsIgnoreCase("high")) {
+            return HIGH;
+        } else if (priority.equalsIgnoreCase("medium")) {
+            return MEDIUM;
+        } else if (priority.equalsIgnoreCase("low")){
+            return LOW;
+        } else {
+            return NOT_VALID_PRIORITY;
+        }
+    }
+
+    @JsonIgnore
+    // REQUIRES: priority level from LOW-HIGH
+    // EFFECTS: Takes an integer representation of priority and returns its string equivalent
+    protected String getPriorityLevel() {
+        switch (priority) {
+            case HIGH:
+                return HIGH_STRING;
+            case MEDIUM:
+                return MEDIUM_STRING;
+            case LOW:
+                return LOW_STRING;
+        }
+        return LOW_STRING;
+    }
+
+    public void setTodoListEntryActivity(TodoListEntryActivity todoListEntryActivity) {
+        this.todoListEntryActivity = todoListEntryActivity;
+    }
+
+    public void setTime(double time) {
+        this.time = time;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
 
     public double getTime() {
         return time;

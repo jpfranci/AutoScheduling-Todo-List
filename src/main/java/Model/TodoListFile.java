@@ -2,8 +2,6 @@ package Model;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.*;
 import java.lang.String;
@@ -68,8 +66,7 @@ public class TodoListFile implements Loadable, Saveable{
                     new TypeReference<List<TodoListEntry>>() {};
             ArrayList<TodoListEntry> todoListEntries = objectMapper.readValue(fileName, typeReference);
 
-            todoList.setTodoArray(todoListEntries);
-            todoList.initializeMap(todoListEntries);
+            todoList.initializeTodoList(todoListEntries);
 
     }
 

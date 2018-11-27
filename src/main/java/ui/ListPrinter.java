@@ -39,37 +39,37 @@ public class ListPrinter implements CalendarObserver {
     }
 
     @Override
-    public void update(Calendar calendar, long timeToSet) {
-        try {
-            printCalendar(calendar, timeToSet);
-        } catch (IOException e) {
-            System.out.println("Error loading Google Calendar");
-        }
+    public void update(List<Event> events) {
+//        try {
+//            printCalendar(calendar, timeToSet);
+//        } catch (IOException e) {
+//            System.out.println("Error loading Google Calendar");
+//        }
     }
 
-    public void printCalendar(Calendar calendar, long timeToSet) throws IOException {
-        DateTime now = new DateTime(timeToSet);
-        DateTime max = new DateTime(timeToSet + TodoListCalendar.RANGE_TO_SET_ACTIVITIES);
-        Events events = calendar.events().list("primary")
-                .setMaxResults(100)
-                .setTimeMin(now)
-                .setTimeMax(max)
-                .setOrderBy("startTime")
-                .setSingleEvents(true)
-                .execute();
-        List<Event> items = events.getItems();
-        if (items.isEmpty()) {
-            System.out.println("No upcoming events found.");
-        } else {
-            System.out.println("Upcoming events");
-            for (Event event : items) {
-                DateTime start = event.getStart().getDateTime();
-                if (start == null) {
-                    start = event.getStart().getDate();
-                }
-                System.out.printf("%s (%s)\n", event.getSummary(), start);
-            }
-        }
-    }
+//    public void printCalendar(Calendar calendar, long timeToSet) throws IOException {
+//        DateTime now = new DateTime(timeToSet);
+//        DateTime max = new DateTime(timeToSet + TodoListCalendar.RANGE_TO_SET_ACTIVITIES);
+//        Events events = calendar.events().list("primary")
+//                .setMaxResults(100)
+//                .setTimeMin(now)
+//                .setTimeMax(max)
+//                .setOrderBy("startTime")
+//                .setSingleEvents(true)
+//                .execute();
+//        List<Event> items = events.getItems();
+//        if (items.isEmpty()) {
+//            System.out.println("No upcoming events found.");
+//        } else {
+//            System.out.println("Upcoming events");
+//            for (Event event : items) {
+//                DateTime start = event.getStart().getDateTime();
+//                if (start == null) {
+//                    start = event.getStart().getDate();
+//                }
+//                System.out.printf("%s (%s)\n", event.getSummary(), start);
+//            }
+//        }
+//    }
 }
 
