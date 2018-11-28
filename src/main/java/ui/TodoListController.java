@@ -31,6 +31,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class TodoListController implements CalendarObserver, Initializable{
+    private static final String EMPTY_INPUT = "";
+
     @FXML private TableColumn<TodoListEntry, Double> timeColumn;
     @FXML private TableColumn<TodoListEntry, String> activityColumn;
     @FXML private TableColumn<TodoListEntry, String> priorityColumn;
@@ -116,7 +118,7 @@ public class TodoListController implements CalendarObserver, Initializable{
                 if (date != null) {
                     return dateFormatter.format(date);
                 } else {
-                    return "";
+                    return EMPTY_INPUT;
                 }
             }
 
@@ -159,6 +161,7 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     @FXML
+    // EFFECTS: Prompts user to choose a file to save to and saves the state of this TodoList
     private void handleSaveButtonClicked(ActionEvent event) {
         File file = chooseFile("save");
 
@@ -172,6 +175,8 @@ public class TodoListController implements CalendarObserver, Initializable{
         }
     }
 
+    // EFFECTS: Prompts user to choose a file to open or save based on type and opens the file chooser
+    // on the default TodoList Saved directory with a filter set to .json files
     private File chooseFile(String type) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TodoList Files", "*.json"));
@@ -186,6 +191,9 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Takes values from input fields and creates a TodoList entry if valid, if not
+    // then shows an applicable error message
     private void addEntryButtonClicked(ActionEvent event) {
         getInputs();
 
@@ -215,43 +223,52 @@ public class TodoListController implements CalendarObserver, Initializable{
 
     }
 
+    // MODIFIES: this
+    // EFFECTS: Resets input fields to default values
     private void resetInputs() {
-        timeInput.setText("");
-        activityInput.setText("");
+        timeInput.setText(EMPTY_INPUT);
+        activityInput.setText(EMPTY_INPUT);
         dueDateInput.setValue(null);
-        priorityInput.setText("");
+        priorityInput.setText(EMPTY_INPUT);
     }
 
+    // MODIFIES: this
+    // EFFECTS: Gets values of input fields
     private void getInputs() {
         inputActivityValue = activityInput.getText();
         inputTimeValue = timeInput.getText();
         if(dueDateInput.getValue() != null) {
             inputDueDateValue = dueDateInput.getValue().toString();
         } else {
-            inputDueDateValue = "";
+            inputDueDateValue = EMPTY_INPUT;
         }
         inputPriorityValue = priorityInput.getText();
     }
 
+    // MODIFIES: this
+    // EFFECTS: Makes table selectable for new users by setting a TableView sort and removing it
     private void makeTableSelectable() {
         activityColumn.setSortType(TableColumn.SortType.ASCENDING);
         todoListTable.getSortOrder().add(activityColumn);
         todoListTable.getSortOrder().remove(activityColumn);
     }
 
+    // MODIFIES: this
+    // EFFECTS: Refreshes table to reflect changes to this TodoList
     private void refreshTable() {
         todoListTable.getColumns().get(0).setVisible(false);
         todoListTable.getColumns().get(0).setVisible(true);
     }
 
+    // MODIFIES: this
+    // EFFECTS: Modifies this error alert and displays the current error to the screen
     private void showErrorAlert(String headerText, String contentText) {
-        errorAlert.setTitle("Error");
-        errorAlert.setHeaderText(headerText);
-        errorAlert.setContentText(contentText);
-        errorAlert.showAndWait();
+        showAlert(errorAlert, "Error", headerText, contentText);
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Changes priority of TodoList entry selected if valid, if not then prints error message
     private void changePriority(TableColumn.CellEditEvent editCell){
         TodoListEntry entrySelected = getSelectedEntry();
         String priority = getNewValue(editCell);
@@ -263,15 +280,19 @@ public class TodoListController implements CalendarObserver, Initializable{
         refreshTable();
     }
 
+    // EFFECTS: Returns new value of cell in string format
     private String getNewValue(TableColumn.CellEditEvent editCell) {
         return editCell.getNewValue().toString();
     }
 
+    // EFFECTS: Returns the current selected entry in TableView
     private TodoListEntry getSelectedEntry() {
         return todoListTable.getSelectionModel().getSelectedItem();
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Changes entry selected's time to input value of user
     private void changeTime(TableColumn.CellEditEvent editCell){
         TodoListEntry entrySelected = getSelectedEntry();
         Double time = (Double) editCell.getNewValue();
@@ -279,26 +300,31 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Changes entry selected's activity to input activity of user if valid,
+    // shows error alert if activity is not unique or no input given
     private void changeActivity(TableColumn.CellEditEvent editCell){
         TodoListEntry entrySelected = getSelectedEntry();
         String activity = editCell.getNewValue().toString();
-        if (!activity.equals("") && !todoList.isInTodoList(activity)) {
+        if (!activity.equals(EMPTY_INPUT) && !todoList.isInTodoList(activity)) {
             entrySelected.setActivity(activity);
         } else {
             showErrorAlert("Error Modifying Activity", "Try again with a non-empty activity and " +
                     "make sure all entries are unique");
         }
         refreshTable();
-
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Gets selected items of user and gives them a confirmation alert before removing all entries from
+    // this TodoList and this Observable list
     private void removeEntryButtonClicked(ActionEvent event) {
         List<TodoListEntry> entriesSelected = getSelectedItems();
 
         if (entriesSelected.size() > 0) {
-            boolean confirmationChoice = showConfirmationAlert("Todo List", "Are you sure you want to remove " +
-                    "these entries:\n" + listToString(entriesSelected));
+            boolean confirmationChoice = showConfirmationAlert("Todo List", "Are you sure you want to " +
+                    "remove " + "these entries:\n" + listToString(entriesSelected));
 
             if (confirmationChoice) {
                 todoList.removeTodoListEntries(entriesSelected);
@@ -308,10 +334,12 @@ public class TodoListController implements CalendarObserver, Initializable{
         }
     }
 
+    // EFFECTS: Returns selected items of user in TableView
     private ObservableList<TodoListEntry> getSelectedItems() {
         return todoListTable.getSelectionModel().getSelectedItems();
     }
 
+    // EFFECTS: Converts a list of TodoListEntries into a string format of Activity1, Activity2, ..., Activityn
     private String listToString(List<TodoListEntry> todoListEntries) {
         StringBuilder todoListEntriesStringBuilder = new StringBuilder();
         for (TodoListEntry entry : todoListEntries) {
@@ -324,6 +352,8 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Changes dueDate value of entries selected if valid, and shows confirmation alert before doing so
     private void modifyDateButtonClicked(ActionEvent event) {
         List<TodoListEntry> entriesSelected = getSelectedItems();
         LocalDate dueDateInputValue = dueDateInput.getValue();
@@ -344,27 +374,34 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     @FXML
+    // EFFECTS: Schedules entries of TodoList to Google calendar and shows confirmation alert if successful, else
+    // shows an error alert if TodoList is empty
     private void scheduleEntriesButtonClicked(ActionEvent event) {
         if (observableTodoListEntries.size() > 0) {
             todoList.scheduleEntries();
             scheduleEntries.setText("Schedule Entries");
         } else {
-            showErrorAlert("Scheduling Entries Error", "Please make sure to have at least one entry in " +
-                    "the todoList before trying to schedule");
+            showErrorAlert("Scheduling Entries Error", "Please make sure to have at least one entry in "
+                    + "the todoList before trying to schedule");
         }
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Displays instructions on how to add entries using the UI
     private void helpAddEntryClicked(ActionEvent event) {
         String headerText = "Adding Entries and Kinds of Entries";
-        String contentText = "To add an entry fill out the activity name and time entry fields, these fields are mandatory.\n" +
-                "The optional fields: priority and due date represent a kind of entry that needs to be completed promptly " +
-                "so these entries are auto-scheduled first. Default values if one is filled out is low for priority and 7 days from today " +
-                "for due date.\nClick the add entry button after you are finished.";
+        String contentText = "To add an entry fill out the activity name and time entry fields, these fields " +
+                "are mandatory.\n" + "The optional fields: priority and due date represent a kind of entry that needs " +
+                "to be completed promptly " + "so these entries are auto-scheduled first. Default values if one is filled " +
+                "out is low for priority and 7 days from today " + "for due date.\nClick the add entry button after " +
+                "you are finished.";
         showHelpAlert(headerText, contentText);
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Displays instructions on how to remove entries using the UI
     private void helpRemoveButtonClicked(ActionEvent event) {
         String headerText = "Removing Entries";
         String contentText = "To remove entries, simply click on the rows that you wish to remove and " +
@@ -382,6 +419,8 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     @FXML
+    // MODIFIES: this
+    // EFFECTS: Displays instructions on how to schedule entries using the UI
     private void helpScheduleButtonClicked(ActionEvent event) {
         String headerText = "Scheduling Entries";
         String contentText = "Scheduling entries requires you to grant permission for this application " +
@@ -392,10 +431,14 @@ public class TodoListController implements CalendarObserver, Initializable{
         showHelpAlert(headerText, contentText);
     }
 
+    // MODIFIES: this
+    // EFFECTS: Displays a Help alert to the user with given HeaderText and ContentText
     private void showHelpAlert(String headerText, String contentText) {
         showAlert(helpAlert, "Todo List Help", headerText, contentText);
     }
 
+    // MODIFIES: this
+    // EFFECTS: Sets alert's title, header text, and content text and shows alert
     private void showAlert(Alert alert, String title, String headerText, String contentText) {
         alert.setTitle(title);
         alert.setHeaderText(headerText);
@@ -416,6 +459,8 @@ public class TodoListController implements CalendarObserver, Initializable{
     }
 
     @Override
+    // MODIFIES: this
+    // EFFECTS: Shows alert of addedEvents to TodoListCalendar and converts events into: Activity from time to time
     public void update(List<Event> addedEvents) {
         if (addedEvents.size() > 0) {
             StringBuilder stringBuilder = new StringBuilder();
@@ -426,6 +471,8 @@ public class TodoListController implements CalendarObserver, Initializable{
         }
     }
 
+    // MODIFIES: this
+    // EFFECTS: Sets informationAlert title, headerText, and contentText and shows it
     private void showInformationAlert(String headerText, String contentText) {
         showAlert(informationAlert, "Todo List", headerText, contentText);
     }
@@ -441,6 +488,7 @@ public class TodoListController implements CalendarObserver, Initializable{
         }
     }
 
+    // EFFECTS: Returns an eventDateTime String in the format of yyyy-MM-dd hr:min AM/PM
     private String dateTimeToLocalDateTimeString(DateTime eventDateTime) {
         LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli
                 (eventDateTime.getValue()), ZoneId.systemDefault());

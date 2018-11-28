@@ -146,7 +146,7 @@ public class TodoListCalendar extends CalendarSubject {
                 double timeToSchedule = entry.getTime();
                 long minutesToAdd = (long) (timeToSchedule * 60);
 
-                LocalDateTime toSchedule = LocalDateTime.of(LocalDate.now(), MIN_SCHEDULE_TIME);
+                LocalDateTime toSchedule = LocalDateTime.of(LocalDate.now(), LocalTime.now());
                 LocalDateTime maxTimeToday = LocalDateTime.of(LocalDate.now(), MAX_SCHEDULE_TIME);
                 LocalDateTime trialDate = toSchedule.plusMinutes(minutesToAdd);
 

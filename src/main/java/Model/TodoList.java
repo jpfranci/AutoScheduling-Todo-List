@@ -20,6 +20,7 @@ public class TodoList implements Serializable {
     public void initializeTodoList(ArrayList<TodoListEntry> todoListEntries) {
         setTodoArray(todoListEntries);
         todoListMap.clear();
+
         for (TodoListEntry entry : todoListEntries) {
             TodoListEntryActivity todoListEntryActivity = entry.getTodoListEntryActivity();
             todoListMap.put(todoListEntryActivity, entry);
@@ -85,8 +86,7 @@ public class TodoList implements Serializable {
     }
 
     public void removeTodoListEntries(List<TodoListEntry> todoListEntries) {
-        ArrayList<TodoListEntry> todoListEntriesCopy = new ArrayList<>();
-        todoListEntriesCopy.addAll(todoListEntries);
+        ArrayList<TodoListEntry> todoListEntriesCopy = new ArrayList<>(todoListEntries);
         todoArray.removeAll(todoListEntries);
 
         List<TodoListEntryActivity> todoListEntryActivities = new ArrayList<>();
@@ -165,7 +165,7 @@ public class TodoList implements Serializable {
 
     // MODIFIES: this
     // EFFECTS: Sets this to todoArray
-    public void setTodoArray(ArrayList<TodoListEntry> todoArray) {
+    private void setTodoArray(ArrayList<TodoListEntry> todoArray) {
         this.todoArray = todoArray;
     }
 
