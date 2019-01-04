@@ -26,7 +26,9 @@ public class LeisureTodoListEntry extends TodoListEntry {
         this.priority = priority;
         priorityString = getPriorityLevel();
         dueDateString = date;
-        setDueDate(date);
+        if (date != null) {
+            setDueDate(date);
+        }
     }
 
     @Override

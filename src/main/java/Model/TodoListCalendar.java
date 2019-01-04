@@ -45,7 +45,7 @@ public class TodoListCalendar extends CalendarSubject {
     private Calendar calendar;
     private ArrayList<LocalDateTime> localDateTimeStarts = new ArrayList<>();
     private ArrayList<LocalDateTime> localDateTimeEnds = new ArrayList<>();
-    private ArrayList<String> allScheduledEvents = new ArrayList<>();
+    private ArrayList<String> events = new ArrayList<>();
     private List<Event> addedEvents = new ArrayList<>();
 
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
@@ -79,7 +79,7 @@ public class TodoListCalendar extends CalendarSubject {
     }
 
     // MODIFIES: this
-    // EFFECTS: Gets all allScheduledEvents from Google Calendar during specified time range and from all the
+    // EFFECTS: Gets all events from Google Calendar during specified time range and from all the
     // pages of the calendar. Stores the start and end LocalDateTimes of these entries
     // and the event name
     private void getCalendarEntries() {
@@ -98,8 +98,8 @@ public class TodoListCalendar extends CalendarSubject {
         }
     }
 
-    // EFFECTS: Takes all the allScheduledEvents from user's primary calendar from today at midnight to specified
-    // time range set by user (default one week) and orders them by startTime. Returns an allScheduledEvents object.
+    // EFFECTS: Takes all the events from user's primary calendar from today at midnight to specified
+    // time range set by user (default one week) and orders them by startTime. Returns an events object.
     private Events getEvents(String pageToken) throws IOException {
         Events events;
         long curTime = getTimeAtMidnight();
@@ -126,7 +126,7 @@ public class TodoListCalendar extends CalendarSubject {
     private void getLocalDatesOfAllEntries(List<Event> items) {
         localDateTimeStarts.clear();
         localDateTimeEnds.clear();
-        allScheduledEvents.clear();
+        events.clear();
         addedEvents.clear();
 
         for (Event event : items) {
@@ -136,17 +136,19 @@ public class TodoListCalendar extends CalendarSubject {
                             .toString().split("[.]")[0]));
             localDateTimeEnds.add(LocalDateTime.parse(event.getEnd().getDateTime()
                     .toString().split("[.]")[0]));
-            allScheduledEvents.add(summary);
+            events.add(summary);
         }
     }
 
+
+
     private void scheduleActivities(Collection<TodoListEntry> todoListEntries, LocalDateTime maxDateTime) {
         for (TodoListEntry entry : todoListEntries) {
-            if (!allScheduledEvents.contains(entry.getTodoListEntryActivity().getActivity())) {
+            if (!events.contains(entry.getTodoListEntryActivity().getActivity())) {
                 double timeToSchedule = entry.getTime();
                 long minutesToAdd = (long) (timeToSchedule * 60);
 
-                LocalDateTime toSchedule = LocalDateTime.of(LocalDate.now(), LocalTime.now());
+                LocalDateTime toSchedule = LocalDateTime.of(LocalDate.now(), MIN_SCHEDULE_TIME);
                 LocalDateTime maxTimeToday = LocalDateTime.of(LocalDate.now(), MAX_SCHEDULE_TIME);
                 LocalDateTime trialDate = toSchedule.plusMinutes(minutesToAdd);
 
@@ -208,7 +210,7 @@ public class TodoListCalendar extends CalendarSubject {
         localDateTimeStarts.add(indexToAccess, toSchedule);
         localDateTimeEnds.add(indexToAccess, trialDate);
         String activity = entry.getTodoListEntryActivity().getActivity();
-        allScheduledEvents.add(activity);
+        events.add(activity);
 
         return true;
     }
@@ -236,6 +238,7 @@ public class TodoListCalendar extends CalendarSubject {
     private String LocalDateTimeToDateTimeString(LocalDateTime trialDate) {
         return trialDate.toString().concat(DATE_TIME_ENDING);
     }
+
 
     public TodoListCalendar(CalendarObserver calendarObserver) {
         try {

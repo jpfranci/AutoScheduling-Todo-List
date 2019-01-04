@@ -1,6 +1,5 @@
 package observer;
 
-import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 
 import java.util.ArrayList;
