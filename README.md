@@ -5,6 +5,8 @@ Can't ever find time in your schedule?
 
 This TodoList also doubles as an autoscheduler for your tasks and prioritizes the tasks that you need to get done. By linking your Google Calendar to the TodoList, you only need to click one button to find time for all the tasks that you need to get done.
 
+With one click you can also sort your list alphabetically, by date, by priority, or even how much time is needed.
+
 It works by scheduling around any existing entries in your Google Calendar, while also refraining from scheduling in hours that are too inconvenient such as late night and early morning.
 
 <img width="600" alt="todolist" src="https://user-images.githubusercontent.com/42393264/50674196-c66d2c80-0f98-11e9-9bf5-cbec7c39ebd0.PNG">
