@@ -3,7 +3,6 @@ package Model;
 import com.fasterxml.jackson.annotation.*;
 import exceptions.InvalidInputException;
 import exceptions.InvalidPriorityException;
-import javafx.beans.property.SimpleStringProperty;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
